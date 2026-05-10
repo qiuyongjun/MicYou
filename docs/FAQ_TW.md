@@ -1,4 +1,6 @@
-# MicYou 文檔
+此文檔已移至 https://micyou.top/zh-TW/docs/quick-start 。若您想為此文檔貢獻心力，請造訪 https://github.com/MicYou-Dev/Website-MicYou
+
+<!-- # MicYou 文檔
 
 <p align="center">
   <a href="./FAQ_ZH.md">简体中文</a> | <b>繁體中文</b> | <a href="./FAQ.md">English</a>
@@ -179,4 +181,4 @@ MicYou
 檢查方式：開啟「設定」> 「聲音」，確保以下兩項均為**已啟用**狀態：
 
 ![輸入裝置](https://github.com/user-attachments/assets/1cf5f97f-1647-4fb0-a152-85be2697df39)
-![輸出裝置](https://github.com/user-attachments/assets/9e9ef42d-186f-42a6-ba4d-7b1a3815f860)
+![輸出裝置](https://github.com/user-attachments/assets/9e9ef42d-186f-42a6-ba4d-7b1a3815f860) -->

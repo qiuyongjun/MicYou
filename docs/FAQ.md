@@ -1,4 +1,6 @@
-# MicYou Docs
+This document has been moved to https://micyou.top/en/docs/quick-start. If you'd like to contribute to this document, please visit https://github.com/MicYou-Dev/Website-MicYou
+
+<!-- # MicYou Docs
 
 <p align="center">
    <a href="./FAQ_ZH.md">简体中文</a> | <a href="./FAQ_TW.md">繁體中文</a> | <b>English</b>
@@ -176,4 +178,4 @@ Please ensure that the VB-Audio driver is correctly installed and that the follo
 To check: Open Settings > Sound, and verify both devices are **Enabled**:
 
 ![Input device](https://github.com/user-attachments/assets/1cf5f97f-1647-4fb0-a152-85be2697df39)
-![Output device](https://github.com/user-attachments/assets/9e9ef42d-186f-42a6-ba4d-7b1a3815f860)
+![Output device](https://github.com/user-attachments/assets/9e9ef42d-186f-42a6-ba4d-7b1a3815f860) -->

@@ -1,4 +1,6 @@
-# MicYou 文档
+本文档已移至 https://micyou.top/docs/quick-start 。如果您希望为本文档做出贡献，请访问 https://github.com/MicYou-Dev/Website-MicYou
+
+<!-- # MicYou 文档
 
 <p align="center">
    <b>简体中文</b> | <a href="./FAQ_TW.md">繁體中文</a> | <a href="./FAQ.md">English</a>
@@ -170,4 +172,4 @@ MicYou
 检查方式：打开「设置」> 「声音」，验证两个设备均为**已启用**状态：
 
 ![输入设备](https://github.com/user-attachments/assets/1cf5f97f-1647-4fb0-a152-85be2697df39)
-![输出设备](https://github.com/user-attachments/assets/9e9ef42d-186f-42a6-ba4d-7b1a3815f860)
+![输出设备](https://github.com/user-attachments/assets/9e9ef42d-186f-42a6-ba4d-7b1a3815f860) -->
