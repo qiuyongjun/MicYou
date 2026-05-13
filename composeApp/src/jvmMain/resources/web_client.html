@@ -33,18 +33,19 @@
             --md-surface-container: #1E2024;
             --md-surface-container-high: #282A2F;
             --md-surface-container-highest: #333539;
-            --md-surface-container-low: #1A1C20;
             --md-outline: #8C909A;
             --md-outline-variant: #42474F;
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-            --ease-in-out-back: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+            --ease-out: cubic-bezier(0.0, 0, 0.2, 1);
+            --ease-in: cubic-bezier(0.4, 0, 1, 1);
+            --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--md-surface);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--md-surface);
+            background-image: radial-gradient(circle at 50% 0%, var(--md-surface-container-high) 0%, var(--md-surface) 70%);
             min-height: 100dvh;
             display: flex; flex-direction: column;
             align-items: center;
@@ -56,252 +57,235 @@
             -webkit-user-select: none;
             user-select: none;
         }
+        
+        button { font-family: inherit; }
+
         .status-bar-bg {
-            width: 100%; max-width: 420px;
+            width: 100%; max-width: 440px;
             height: max(28px, env(safe-area-inset-top));
             background: transparent;
             flex-shrink: 0;
         }
+        
         .app-container {
-            max-width: 420px; width: 100%;
+            max-width: 440px; width: 100%;
             flex: 1;
             display: flex; flex-direction: column;
-            gap: 10px;
-            padding: 0 16px;
-            padding-bottom: 100px;
+            gap: 16px;
+            padding: 8px 16px 120px 16px;
+            position: relative;
         }
 
-        .card {
-            background: rgba(55, 57, 62, 0.75);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 12px;
-            width: 100%;
-        }
-        @supports not (backdrop-filter: blur(1px)) {
-            .card {
-                background: var(--md-surface-bright);
-            }
-        }
-
-        .header-card {
+        /* Header UI */
+        .header-wrap {
             display: flex; align-items: center;
             justify-content: space-between;
-            padding: 12px 16px;
+            padding: 8px 4px;
             position: relative;
-            z-index: 10;
+            z-index: 20;
         }
-        .header-left {
-            display: flex; align-items: center; gap: 12px;
-        }
+        
+        .header-left { display: flex; align-items: center; gap: 14px; }
+        
         .app-icon-badge {
-            width: 36px; height: 36px;
+            width: 40px; height: 40px;
             background: var(--md-primary-container);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
         }
-        .app-icon-badge svg { width: 20px; height: 20px; }
+        .app-icon-badge svg { 
+            width: 26px; height: 26px; 
+        }
+        
+        .header-title-container { display: flex; flex-direction: column; justify-content: center; }
+        
         .header-title {
-            font-size: 0.95em; font-weight: 600;
+            font-size: 1rem; font-weight: 600;
             color: var(--md-primary);
+            letter-spacing: -0.01em;
+            line-height: 1.2;
         }
         .header-subtitle {
-            font-size: 0.72em; color: var(--md-on-surface-variant);
-            margin-top: 1px;
-        }
-        .lang-dropdown {
-            position: relative;
-        }
-        .lang-trigger {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            padding: 9px 13px;
-            background: var(--md-surface-container-highest);
-            border: 1px solid var(--md-outline-variant);
-            border-radius: 13px;
-            cursor: pointer;
-            font-size: 0.82em;
-            font-weight: 500;
+            font-size: 0.75rem; font-weight: 500;
             color: var(--md-on-surface-variant);
-            transition: all 0.25s ease;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            min-height: 42px;
-            user-select: none;
-        }
-        .lang-trigger svg {
-            fill: currentColor;
-        }
-        .lang-trigger:hover {
-            border-color: var(--md-outline);
-            background: var(--md-surface-container-high);
-        }
-        .lang-trigger:active {
-            transform: scale(0.95);
-        }
-        .lang-trigger svg.lang-globe {
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-        }
-        .lang-trigger .lang-label {
-            font-variant-numeric: tabular-nums;
-        }
-        .lang-trigger svg.lang-chevron {
-            width: 14px;
-            height: 14px;
-            flex-shrink: 0;
-            transition: transform 0.3s var(--ease-spring);
-        }
-        .lang-trigger.open svg.lang-chevron {
-            transform: rotate(180deg);
-        }
-        .lang-menu {
-            position: absolute;
-            top: calc(100% + 6px);
-            right: 0;
-            min-width: 130px;
-            background: var(--md-surface-container-high);
-            border: 1px solid var(--md-outline-variant);
-            border-radius: 14px;
-            padding: 6px;
-            box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: 50;
-            transform-origin: top right;
-            transition: opacity 0.2s ease, transform 0.28s var(--ease-spring);
-        }
-        .lang-menu.closed {
-            opacity: 0;
-            pointer-events: none;
-            transform: scale(0.85) translateY(-6px);
-        }
-        .lang-menu.open {
-            opacity: 1;
-            pointer-events: auto;
-            transform: scale(1) translateY(0);
-        }
-        .lang-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-            padding: 12px 14px;
-            border: none;
-            border-radius: 10px;
-            background: transparent;
-            color: var(--md-on-surface-variant);
-            font-size: 0.85em;
-            font-weight: 400;
-            cursor: pointer;
-            transition: all 0.18s ease;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            min-height: 44px;
-            text-align: left;
-        }
-        .lang-menu-item svg {
-            fill: currentColor;
-        }
-        .lang-menu-item:hover {
-            background: rgba(124,184,249,0.1);
-            color: var(--md-on-surface);
-        }
-        .lang-menu-item:active {
-            background: rgba(124,184,249,0.18);
-            transform: scale(0.97);
-        }
-        .lang-menu-item.active {
-            background: var(--md-primary-container);
-            color: var(--md-on-primary-container);
-        }
-        .lang-menu-item .check-mark {
-            margin-left: auto;
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-            opacity: 0;
-            transition: opacity 0.18s ease;
-        }
-        .lang-menu-item.active .check-mark {
-            opacity: 1;
-        }
-        .lang-menu-backdrop {
-            position: fixed;
-            inset: 0;
-            z-index: 49;
+            margin-top: 2px;
         }
 
-        .status-card {
-            display: flex; flex-direction: column;
-            align-items: center; gap: 10px;
-            padding: 16px 12px;
+        .lang-dropdown { position: relative; }
+        .lang-trigger {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 14px;
+            background: var(--md-surface-container);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: 9999px;
+            cursor: pointer;
+            font-size: 0.875rem; font-weight: 500;
+            color: var(--md-on-surface);
+            transition: all 0.2s var(--ease-out);
+            outline: none;
         }
+        .lang-trigger:hover {
+            background: var(--md-surface-container-high);
+            border-color: var(--md-outline);
+        }
+        .lang-trigger:focus-visible { box-shadow: 0 0 0 2px var(--md-surface), 0 0 0 4px var(--md-primary); }
+        .lang-trigger:active { transform: scale(0.96); }
+        .lang-trigger svg { fill: currentColor; }
+        .lang-trigger svg.lang-globe { width: 16px; height: 16px; opacity: 0.8; }
+        .lang-trigger svg.lang-chevron { width: 16px; height: 16px; opacity: 0.6; transition: transform 0.2s var(--ease-out); }
+        .lang-trigger.open svg.lang-chevron { transform: rotate(180deg); }
+
+        .lang-menu-backdrop {
+            position: fixed; inset: 0; z-index: 40;
+            display: none;
+        }
+        .lang-menu-backdrop.open { display: block; }
+
+        .lang-menu {
+            position: absolute; top: calc(100% + 8px); right: 0;
+            min-width: 140px;
+            background: var(--md-surface-container-high);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: 16px;
+            padding: 6px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.25);
+            z-index: 50;
+            transform-origin: top right;
+            opacity: 0; transform: scale(0.95); pointer-events: none;
+            transition: opacity 0.15s var(--ease-out), transform 0.15s var(--ease-out);
+        }
+        .lang-menu.open { opacity: 1; transform: scale(1); pointer-events: auto; }
+
+        .lang-menu-item {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; padding: 10px 12px;
+            border: none; border-radius: 10px;
+            background: transparent;
+            color: var(--md-on-surface-variant);
+            font-size: 0.875rem; font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s var(--ease-out);
+            outline: none;
+        }
+        .lang-menu-item svg { fill: currentColor; width: 18px; height: 18px; }
+        .lang-menu-item:hover, .lang-menu-item:focus-visible {
+            background: var(--md-surface-container-highest);
+            color: var(--md-on-surface);
+        }
+        .lang-menu-item.active {
+            background: rgba(124,184,249,0.1);
+            color: var(--md-primary);
+        }
+        .lang-menu-item .check-mark {
+            opacity: 0; transform: scale(0.8);
+            transition: all 0.2s var(--ease-out);
+        }
+        .lang-menu-item.active .check-mark { opacity: 1; transform: scale(1); }
+
+        /* Main Center Card */
+        .main-card {
+            background: var(--md-surface-container);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: 28px;
+            padding: 24px 16px;
+            display: flex; flex-direction: column; align-items: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            flex: 1;
+            min-height: 380px;
+            z-index: 10;
+        }
+
+        .main-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        }
+
+        .status-header {
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+            margin-bottom: auto;
+            z-index: 2;
+        }
+
         .status-icon-wrap {
-            width: 52px; height: 52px;
-            border-radius: 14px;
+            width: 48px; height: 48px;
+            border-radius: 16px;
             display: flex; align-items: center; justify-content: center;
-            transition: background 0.3s ease;
+            transition: all 0.3s var(--ease-out);
+            background: var(--md-surface-container-high);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .status-icon-wrap svg { width: 26px; height: 26px; }
-        .status-icon-wrap.idle { background: rgba(194,198,207,0.12); }
+        .status-icon-wrap svg { width: 24px; height: 24px; transition: all 0.3s var(--ease-out); }
+        
         .status-icon-wrap.idle svg { color: var(--md-on-surface-variant); fill: var(--md-on-surface-variant); }
-        .status-icon-wrap.acquiring { background: rgba(211,188,229,0.15); }
-        .status-icon-wrap.acquiring svg { color: var(--md-tertiary); fill: var(--md-tertiary); animation: mic-pulse 1.2s ease-in-out infinite; }
-        .status-icon-wrap.connecting { background: rgba(211,188,229,0.12); }
+        .status-icon-wrap.acquiring { background: rgba(211,188,229,0.1); border-color: rgba(211,188,229,0.2); }
+        .status-icon-wrap.acquiring svg { color: var(--md-tertiary); fill: var(--md-tertiary); animation: mic-pulse 1.5s ease-in-out infinite; }
+        .status-icon-wrap.connecting { background: rgba(211,188,229,0.1); border-color: rgba(211,188,229,0.2); }
         .status-icon-wrap.connecting svg { color: var(--md-tertiary); fill: var(--md-tertiary); }
-        .status-icon-wrap.streaming { background: rgba(124,184,249,0.12); }
+        .status-icon-wrap.streaming { background: rgba(124,184,249,0.1); border-color: rgba(124,184,249,0.2); }
         .status-icon-wrap.streaming svg { color: var(--md-primary); fill: var(--md-primary); }
-        .status-icon-wrap.error { background: rgba(255,180,171,0.12); }
+        .status-icon-wrap.error { background: rgba(255,180,171,0.1); border-color: rgba(255,180,171,0.2); }
         .status-icon-wrap.error svg { color: var(--md-error); fill: var(--md-error); }
 
         .status-text-row {
-            display: flex; align-items: center; gap: 6px;
+            display: flex; align-items: center; gap: 8px;
+            height: 24px;
         }
         .status-text {
-            font-size: 0.85em; font-weight: 500;
+            font-size: 0.9375rem; font-weight: 500;
             transition: color 0.3s ease;
         }
         .status-text.idle { color: var(--md-on-surface-variant); }
-        .status-text.acquiring { color: var(--md-tertiary); }
-        .status-text.connecting { color: var(--md-tertiary); }
+        .status-text.acquiring, .status-text.connecting { color: var(--md-tertiary); }
         .status-text.streaming { color: var(--md-primary); }
         .status-text.error { color: var(--md-error); }
 
         .live-badge {
             background: var(--md-primary);
             color: var(--md-on-primary);
-            font-size: 0.65em; font-weight: 700;
-            padding: 2px 5px; border-radius: 4px;
+            font-size: 0.65rem; font-weight: 700;
+            padding: 2px 6px; border-radius: 6px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            opacity: 0; transform: scale(0.9);
+            transition: all 0.3s var(--ease-out);
             display: none;
         }
-        .live-badge.visible { display: inline-block; }
+        .live-badge.visible { display: inline-block; opacity: 1; transform: scale(1); }
 
         .error-message {
-            background: rgba(147,0,10,0.5);
+            background: var(--md-error-container);
             color: var(--md-on-error-container);
-            font-size: 0.75em; padding: 8px;
+            font-size: 0.8125rem; font-weight: 500;
+            padding: 10px 16px;
             border-radius: 12px; text-align: center;
-            max-width: 280px; display: none;
+            max-width: 90%; 
+            display: none;
+            margin-top: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .error-message.visible { display: block; }
+        .error-message.visible { display: block; animation: fade-in-up 0.3s var(--ease-out); }
 
-        .main-control-card {
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .center-action {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            margin: auto 0;
             position: relative;
-            flex: 1;
-            min-height: 320px;
-            padding: 24px 12px;
-            gap: 12px;
+            width: 100%;
         }
 
         .visualizer-ring {
             position: absolute;
-            width: min(280px, 65vw); height: min(280px, 65vw);
+            width: min(280px, 75vw); height: min(280px, 75vw);
             border-radius: 50%;
             pointer-events: none;
             opacity: 0; transition: opacity 0.5s ease;
@@ -310,188 +294,185 @@
         .visualizer-ring-inner {
             position: absolute; inset: 0;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(124,184,249,0.15) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(124,184,249,0.08) 0%, transparent 70%);
             animation: pulse-ring 2s ease-in-out infinite;
         }
         .visualizer-ring-ripple {
-            position: absolute; inset: -20px;
+            position: absolute; inset: 0;
             border-radius: 50%;
-            border: 2px solid rgba(124,184,249,0.2);
-            animation: ripple-expand 2.5s ease-out infinite;
+            border: 1px solid rgba(124,184,249,0.3);
+            animation: ripple-expand 2.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
         }
         .visualizer-ring-ripple:nth-child(2) { animation-delay: 0.8s; }
         .visualizer-ring-ripple:nth-child(3) { animation-delay: 1.6s; }
 
         @keyframes pulse-ring {
-            0%, 100% { transform: scale(0.96); opacity: 0.8; }
-            50% { transform: scale(1.04); opacity: 1; }
+            0%, 100% { transform: scale(0.9); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
         }
         @keyframes ripple-expand {
-            0% { transform: scale(0.8); opacity: 0.6; }
-            100% { transform: scale(1.3); opacity: 0; }
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
 
         .main-btn-wrap {
-            position: relative; z-index: 2;
-            width: 120px; height: 120px;
+            position: relative; z-index: 10;
+            width: 140px; height: 140px;
             display: flex; align-items: center; justify-content: center;
-            touch-action: manipulation;
-            margin: 8px 0;
         }
         .main-btn-glow {
-            position: absolute; inset: -16px;
+            position: absolute; inset: -20px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(124,184,249,0.3) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(124,184,249,0.2) 0%, transparent 60%);
             opacity: 0; transition: opacity 0.5s ease;
             pointer-events: none;
+            filter: blur(10px);
         }
         .main-btn-glow.active {
             opacity: 1;
-            animation: glow-pulse 1.5s ease-in-out infinite alternate;
+            animation: glow-pulse 2s ease-in-out infinite alternate;
         }
         @keyframes glow-pulse {
-            0% { opacity: 0.3; transform: scale(0.95); }
-            100% { opacity: 0.6; transform: scale(1.05); }
+            0% { opacity: 0.4; transform: scale(0.9); }
+            100% { opacity: 0.8; transform: scale(1.1); }
         }
 
         .main-btn {
-            width: 96px; height: 96px;
+            width: 112px; height: 112px;
             border-radius: 50%; border: none;
             cursor: pointer; position: relative;
             display: flex; align-items: center; justify-content: center;
             transition: all 0.4s var(--ease-spring);
-            box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5), 0 8px 10px -6px rgba(0,0,0,0.3);
             outline: none;
-            touch-action: manipulation;
+            color: white;
             -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            user-select: none;
+        }
+        
+        .main-btn::before {
+            content: ''; position: absolute; inset: 0; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
         }
         .main-btn::after {
-            content: ''; position: absolute; inset: 0;
-            border-radius: 50%;
-            background: radial-gradient(circle at center, rgba(255,255,255,0.2) 0%, transparent 70%);
-            opacity: 0; transition: opacity 0.2s ease;
+            content: ''; position: absolute; inset: 0; border-radius: 50%;
+            background: inherit; filter: brightness(1.2); opacity: 0;
+            transition: opacity 0.2s ease; z-index: -1;
         }
+        .main-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 30px -5px rgba(0,0,0,0.6), 0 10px 15px -6px rgba(0,0,0,0.4);
+        }
+        .main-btn:hover::before { border-color: rgba(255,255,255,0.4); }
+        .main-btn:active { transform: scale(0.94); box-shadow: 0 5px 15px -5px rgba(0,0,0,0.5); }
         .main-btn:active::after { opacity: 1; }
-        .main-btn.idle {
-            background: var(--md-primary);
-            width: 96px; height: 96px;
-        }
-        .main-btn.streaming {
-            background: var(--md-error);
-            width: 112px; height: 112px;
-        }
-        .main-btn.connecting {
-            background: var(--md-tertiary);
-            width: 96px; height: 96px;
-        }
-        .main-btn.acquiring {
-            background: var(--md-tertiary);
-            width: 96px; height: 96px;
-        }
-        .main-btn:active { transform: scale(0.9); }
-        .main-btn svg { width: 36px; height: 36px; fill: white; }
-        .main-btn.idle svg { fill: white; }
-        .main-btn.streaming svg { fill: white; }
-        .main-btn.connecting svg {
-            fill: white;
-            animation: spin 1s linear infinite;
+        .main-btn:focus-visible { box-shadow: 0 0 0 4px var(--md-surface), 0 0 0 8px var(--md-primary); }
+
+        .main-btn.idle { background: var(--md-primary); }
+        .main-btn.idle svg { fill: var(--md-on-primary); }
+        
+        .main-btn.streaming { background: var(--md-error); width: 124px; height: 124px; }
+        .main-btn.streaming svg { fill: var(--md-on-error); }
+        
+        .main-btn.connecting, .main-btn.acquiring { background: var(--md-tertiary); }
+        .main-btn.connecting svg, .main-btn.acquiring svg { fill: var(--md-on-tertiary); }
+        
+        .main-btn.connecting svg { animation: spin 1s linear infinite; }
+
+        .main-btn svg { width: 44px; height: 44px; z-index: 2; transition: fill 0.3s ease; }
+
+        @keyframes mic-pulse {
+            0%, 100% { opacity: 0.6; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.05); }
         }
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        @keyframes mic-pulse {
-            0%, 100% { opacity: 0.6; transform: scale(0.9); }
-            50% { opacity: 1; transform: scale(1.05); }
-        }
 
+        .audio-level-container {
+            width: 100%; max-width: 240px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            margin-top: auto; opacity: 0; transition: opacity 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+        .audio-level-container.visible { opacity: 1; }
+        
         .audio-level {
-            width: 80%; max-width: 280px; height: 5px;
+            width: 100%; height: 6px;
             background: var(--md-surface-container-highest);
-            border-radius: 3px; overflow: hidden;
-            margin-top: 4px;
+            border-radius: 9999px; overflow: hidden;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
         }
         .audio-level-bar {
             height: 100%;
             background: linear-gradient(90deg, var(--md-primary), var(--md-tertiary));
-            width: 0%; transition: width 0.06s ease;
-            border-radius: 3px;
+            width: 0%; transition: width 0.08s ease-out;
+            border-radius: 9999px;
         }
 
-        .bottom-bar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            display: flex; align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            padding-bottom: max(12px, env(safe-area-inset-bottom));
-            background: rgba(30, 32, 36, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--md-outline-variant);
+        /* Floating Island Bottom Bar */
+        .bottom-island {
+            position: fixed; bottom: max(24px, env(safe-area-inset-bottom));
+            left: 50%; transform: translateX(-50%);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 12px;
+            background: rgba(30, 32, 36, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
             z-index: 100;
-            max-width: 420px;
-            margin: 0 auto;
-            left: max(0px, env(safe-area-inset-left));
-            right: max(0px, env(safe-area-inset-right));
+            width: calc(100% - 32px);
+            max-width: 380px;
         }
         @supports not (backdrop-filter: blur(1px)) {
-            .bottom-bar {
-                background: var(--md-surface-container);
-            }
+            .bottom-island { background: var(--md-surface-container-high); }
         }
-        .bottom-left { display: flex; gap: 8px; }
 
-        .pill-btn {
-            display: flex; align-items: center; gap: 8px;
-            padding: 12px 18px; border: none;
-            border-radius: 14px; cursor: pointer;
-            font-size: 0.9em; font-weight: 500;
-            transition: all 0.2s ease;
+        .bottom-actions { display: flex; gap: 8px; }
+
+        .icon-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 10px 16px; border: none;
+            border-radius: 9999px; cursor: pointer;
+            font-size: 0.875rem; font-weight: 600;
+            background: transparent; color: var(--md-on-surface-variant);
+            transition: all 0.2s var(--ease-out);
             outline: none;
-            touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
-            min-height: 48px; min-width: 48px;
         }
-        .pill-btn:active { transform: scale(0.92); }
-        .pill-btn svg { width: 18px; height: 18px; }
-        .pill-btn.mute-btn {
-            background: var(--md-surface-container-highest);
-            color: var(--md-on-surface-variant);
-        }
-        .pill-btn.mute-btn svg { fill: var(--md-on-surface-variant); }
-        .pill-btn.mute-btn.muted {
+        .icon-btn:hover { background: var(--md-surface-container-highest); color: var(--md-on-surface); }
+        .icon-btn:active { transform: scale(0.95); }
+        .icon-btn:focus-visible { box-shadow: 0 0 0 2px var(--md-surface), 0 0 0 4px var(--md-primary); }
+        .icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
+        
+        .icon-btn.mute-btn.muted {
             background: var(--md-error-container);
             color: var(--md-on-error-container);
         }
-        .pill-btn.mute-btn.muted svg { fill: var(--md-on-error-container); }
+
+        .icon-btn.round { padding: 10px; width: 44px; height: 44px; }
+
+        .island-status {
+            display: flex; align-items: center; gap: 8px;
+            padding-right: 8px;
+        }
 
         .status-dot {
-            width: 8px; height: 8px;
+            width: 10px; height: 10px;
             border-radius: 50%;
             background: var(--md-on-surface-variant);
             opacity: 0.3;
             transition: all 0.3s ease;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.05);
         }
-        .status-dot.streaming {
-            background: var(--md-primary);
-            opacity: 1;
-            animation: dot-pulse 1.2s ease-in-out infinite;
-        }
-        .status-dot.connecting {
-            background: var(--md-tertiary);
-            opacity: 1;
-        }
-        .status-dot.acquiring {
-            background: var(--md-tertiary);
-            opacity: 1;
-            animation: dot-pulse 1.2s ease-in-out infinite;
-        }
-        .status-dot.error {
-            background: var(--md-error);
-            opacity: 1;
-        }
+        .status-dot.streaming { background: var(--md-primary); opacity: 1; animation: dot-pulse 1.5s ease-in-out infinite; box-shadow: 0 0 8px rgba(124,184,249,0.5); }
+        .status-dot.connecting, .status-dot.acquiring { background: var(--md-tertiary); opacity: 1; animation: dot-pulse 1.5s ease-in-out infinite; box-shadow: 0 0 8px rgba(211,188,229,0.5); }
+        .status-dot.error { background: var(--md-error); opacity: 1; box-shadow: 0 0 8px rgba(255,180,171,0.5); }
+
         @keyframes dot-pulse {
             0%, 100% { transform: scale(0.8); }
             50% { transform: scale(1.2); }
@@ -499,168 +480,162 @@
 
         .help-overlay {
             position: fixed; inset: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             z-index: 200;
-            display: flex; align-items: flex-end;
+            display: flex; align-items: flex-end; justify-content: center;
             opacity: 0; pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s var(--ease-out);
         }
-        .help-overlay.visible {
-            opacity: 1; pointer-events: auto;
-        }
+        .help-overlay.visible { opacity: 1; pointer-events: auto; }
+        
         .help-sheet {
-            width: 100%; max-width: 420px;
-            margin: 0 auto;
-            background: rgba(40, 42, 47, 0.92);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-radius: 20px 20px 0 0;
-            padding: 16px 20px 24px;
-            padding-bottom: max(24px, env(safe-area-inset-bottom));
+            width: 100%; max-width: 440px;
+            background: var(--md-surface-container-high);
+            border-radius: 28px 28px 0 0;
+            padding: 20px 24px 32px;
+            padding-bottom: max(32px, env(safe-area-inset-bottom));
             transform: translateY(100%);
             transition: transform 0.4s var(--ease-spring);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-bottom: none;
+            box-shadow: 0 -10px 25px rgba(0,0,0,0.5);
         }
-        @supports not (backdrop-filter: blur(1px)) {
-            .help-sheet {
-                background: var(--md-surface-container-high);
-            }
+        @media (min-width: 600px) {
+            .help-overlay { align-items: center; }
+            .help-sheet { border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); transform: scale(0.95); opacity: 0; }
+            .help-overlay.visible .help-sheet { transform: scale(1); opacity: 1; }
         }
-        .help-overlay.visible .help-sheet {
-            transform: translateY(0);
-        }
+        .help-overlay.visible .help-sheet { transform: translateY(0); }
+        
         .help-sheet-handle {
-            width: 36px; height: 4px;
+            width: 48px; height: 5px;
             background: var(--md-outline-variant);
-            border-radius: 2px;
-            margin: 0 auto 14px;
+            border-radius: 9999px;
+            margin: 0 auto 20px;
         }
+        @media (min-width: 600px) { .help-sheet-handle { display: none; } }
+        
         .help-sheet-header {
-            display: flex; align-items: center;
-            justify-content: space-between;
-            margin-bottom: 14px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 24px;
         }
         .help-sheet-header h3 {
-            color: var(--md-primary);
-            font-size: 1.05em;
+            color: var(--md-on-surface);
+            font-size: 1.25rem; font-weight: 600;
+            letter-spacing: -0.01em;
         }
         .help-close-btn {
             width: 36px; height: 36px;
-            border: none; background: none;
+            border: none; background: var(--md-surface-container-highest);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
+            cursor: pointer; color: var(--md-on-surface-variant);
+            transition: all 0.2s ease;
         }
-        .help-close-btn:active { background: rgba(255,255,255,0.08); }
+        .help-close-btn:hover { background: var(--md-surface-bright); color: var(--md-on-surface); transform: scale(1.05); }
+        .help-close-btn:active { transform: scale(0.95); }
+        .help-close-btn svg { fill: currentColor; }
+
         .help-sheet-content {
-            font-size: 0.85em; line-height: 2;
+            font-size: 0.9375rem; line-height: 1.6;
             color: var(--md-on-surface-variant);
+            display: flex; flex-direction: column; gap: 20px;
         }
-        .help-sheet-content p {
-            padding: 6px 0;
-            border-bottom: 1px solid var(--md-outline-variant);
+        .help-step {
+            display: flex; gap: 16px; align-items: flex-start;
         }
-        .help-sheet-content p:last-child { border-bottom: none; }
+        .help-step-icon {
+            width: 32px; height: 32px; flex-shrink: 0;
+            background: var(--md-surface-container);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--md-primary); font-weight: 600; font-size: 0.875rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .help-step-text { margin-top: 4px; }
 
-        .pill-btn.help-btn {
-            background: var(--md-surface-container-highest);
-            color: var(--md-on-surface-variant);
-            padding: 12px;
-            justify-content: center;
-        }
-        .pill-btn.help-btn svg { fill: var(--md-on-surface-variant); }
-
-        .toast {
+        .toast-container {
             position: fixed; top: 16px; top: max(16px, env(safe-area-inset-top));
-            left: 50%; transform: translateX(-50%) translateY(-120%);
+            left: 0; right: 0; display: flex; justify-content: center;
+            pointer-events: none; z-index: 300;
+        }
+        .toast {
             background: var(--md-surface-container-high);
             color: var(--md-on-surface);
-            padding: 12px 24px;
-            border-radius: 14px;
-            font-size: 0.85em; font-weight: 500;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-            z-index: 300;
-            transition: transform 0.45s var(--ease-spring), opacity 0.3s ease;
-            pointer-events: none;
-            white-space: nowrap;
-            opacity: 0;
+            padding: 12px 20px;
+            border-radius: 9999px;
+            font-size: 0.875rem; font-weight: 500;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5), 0 4px 6px -2px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; gap: 10px;
+            transform: translateY(-120%); opacity: 0;
+            transition: transform 0.4s var(--ease-spring), opacity 0.3s ease;
         }
-        .toast.visible {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-        .toast.success { border-left: 3px solid var(--md-primary); }
-        .toast.error { border-left: 3px solid var(--md-error); }
+        .toast.visible { transform: translateY(0); opacity: 1; }
+        .toast-icon { width: 20px; height: 20px; flex-shrink: 0; }
+        .toast.success .toast-icon { fill: var(--md-primary); }
+        .toast.error .toast-icon { fill: var(--md-error); }
 
         @media (max-width: 360px) {
-            body { padding: 0; }
-            .app-container { gap: 8px; padding: 0 10px; padding-bottom: 90px; }
-            .card { border-radius: 16px; padding: 10px; }
-            .header-card { padding: 10px 12px; }
-            .app-icon-badge { width: 32px; height: 32px; border-radius: 10px; }
-            .app-icon-badge svg { width: 18px; height: 18px; }
-            .header-title { font-size: 0.88em; }
-            .main-control-card { min-height: 260px; padding: 16px 8px; }
-            .visualizer-ring { width: min(220px, 55vw); height: min(220px, 55vw); }
-            .main-btn.idle { width: 80px; height: 80px; }
-            .main-btn.streaming { width: 96px; height: 96px; }
-            .main-btn.connecting { width: 80px; height: 80px; }
-            .main-btn.acquiring { width: 80px; height: 80px; }
-            .main-btn svg { width: 28px; height: 28px; }
-            .main-btn-wrap { width: 100px; height: 100px; }
-            .toast { padding: 10px 18px; font-size: 0.8em; }
+            .app-container { gap: 12px; padding: 6px 12px 110px 12px; }
+            .main-card { min-height: 320px; padding: 20px 12px; border-radius: 24px; }
+            .visualizer-ring { width: min(240px, 65vw); height: min(240px, 65vw); }
+            .main-btn { width: 96px; height: 96px; }
+            .main-btn.streaming { width: 108px; height: 108px; }
+            .main-btn svg { width: 36px; height: 36px; }
+            .icon-btn { font-size: 0.8rem; padding: 10px 14px; }
+            .icon-btn.round { padding: 10px; }
         }
 
-        @media (max-height: 600px) {
-            .app-container { gap: 6px; padding-bottom: 90px; }
-            .main-control-card { min-height: 240px; padding: 12px 8px; }
-            .visualizer-ring { width: min(200px, 50vw); height: min(200px, 50vw); }
-            .main-btn.idle { width: 72px; height: 72px; }
-            .main-btn.streaming { width: 88px; height: 88px; }
-            .main-btn.connecting { width: 72px; height: 72px; }
-            .main-btn.acquiring { width: 72px; height: 72px; }
-            .main-btn svg { width: 26px; height: 26px; }
-            .main-btn-wrap { width: 88px; height: 88px; }
-            .header-card { padding: 8px 12px; }
-        }
-
-        @media (min-width: 600px) {
-            .app-container { max-width: 460px; }
-            .main-control-card { min-height: 360px; }
-            .bottom-bar { max-width: 460px; }
-            .help-sheet { max-width: 460px; }
+        @media (max-height: 650px) {
+            .app-container { padding-bottom: 100px; gap: 10px; }
+            .main-card { min-height: 300px; padding: 16px; border-radius: 24px; }
+            .visualizer-ring { width: min(220px, 60vw); height: min(220px, 60vw); }
+            .main-btn { width: 90px; height: 90px; }
+            .main-btn.streaming { width: 100px; height: 100px; }
+            .main-btn svg { width: 32px; height: 32px; }
+            .status-icon-wrap { width: 40px; height: 40px; border-radius: 12px; }
+            .status-icon-wrap svg { width: 20px; height: 20px; }
         }
     </style>
 </head>
-<body>
-    <div class="toast" :class="{ visible: toastVisible, success: toastType === 'success', error: toastType === 'error' }" x-text="toastMessage"></div>
+<body x-data="micYouApp()">
+    <div class="toast-container">
+        <div class="toast" :class="{ visible: toastVisible, success: toastType === 'success', error: toastType === 'error' }">
+            <svg class="toast-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" x-html="toastType === 'success' ? SVG_CHECK_CIRCLE : SVG_ERROR"></svg>
+            <span x-text="toastMessage"></span>
+        </div>
+    </div>
+    
     <div class="status-bar-bg"></div>
-    <div class="app-container"
-        x-data="micYouApp()">
-
-        <div class="card header-card">
+    
+    <div class="app-container">
+        <div class="header-wrap">
             <div class="header-left">
                 <div class="app-icon-badge">
-                    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                        <path fill="var(--md-primary)" d="M382.714 129.286C422.703 169.276 422.703 234.112 382.714 274.102L328.408 328.408C288.418 368.397 223.582 368.397 183.592 328.408C143.603 288.418 143.603 223.582 183.592 183.592L237.898 129.286C277.888 89.2968 342.724 89.2968 382.714 129.286ZM346.51 165.49C326.515 145.495 294.097 145.495 274.102 165.49L219.796 219.796C199.801 239.791 199.801 272.209 219.796 292.204C239.791 312.199 272.209 312.199 292.204 292.204L346.51 237.898C366.504 217.903 366.504 185.485 346.51 165.49Z"/>
+                    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" fill="none">
+                        <path fill="white" d="M382.714 129.286C422.703 169.276 422.703 234.112 382.714 274.102L328.408 328.408C288.418 368.397 223.582 368.397 183.592 328.408C143.603 288.418 143.603 223.582 183.592 183.592L237.898 129.286C277.888 89.2968 342.724 89.2968 382.714 129.286ZM346.51 165.49C326.515 145.495 294.097 145.495 274.102 165.49L219.796 219.796C199.801 239.791 199.801 272.209 219.796 292.204C239.791 312.199 272.209 312.199 292.204 292.204L346.51 237.898C366.504 217.903 366.504 185.485 346.51 165.49Z"/>
+                        <path stroke="var(--md-primary)" stroke-width="51.2" stroke-linejoin="round" stroke-linecap="round" d="M147.388 147.388C145.611 149.166 143.878 150.986 142.19 152.849C140.502 154.711 138.86 156.614 137.266 158.557C135.671 160.5 134.125 162.481 132.627 164.5C131.13 166.52 129.683 168.575 128.286 170.664C126.89 172.754 125.545 174.878 124.253 177.034C122.96 179.19 121.722 181.376 120.537 183.594C119.352 185.811 118.222 188.055 117.148 190.327C116.073 192.6 115.054 194.897 114.092 197.22C113.13 199.542 112.226 201.887 111.379 204.253C110.532 206.62 109.744 209.006 109.014 211.412C108.284 213.818 107.614 216.24 107.003 218.678C106.392 221.116 105.842 223.568 105.351 226.034C104.861 228.5 104.431 230.975 104.063 233.462C103.694 235.949 103.386 238.443 103.14 240.945C102.893 243.447 102.708 245.953 102.585 248.463C102.462 250.974 102.4 253.486 102.399 256C102.4 258.514 102.462 261.026 102.585 263.537C102.708 266.047 102.893 268.553 103.14 271.055C103.386 273.557 103.694 276.051 104.063 278.538C104.431 281.024 104.861 283.5 105.351 285.966C105.841 288.432 106.392 290.884 107.003 293.322C107.614 295.761 108.284 298.182 109.014 300.587C109.744 302.993 110.532 305.38 111.379 307.747C112.225 310.113 113.13 312.458 114.092 314.78C115.054 317.103 116.073 319.4 117.148 321.673C118.222 323.945 119.352 326.19 120.537 328.406C121.722 330.624 122.961 332.81 124.253 334.966C125.545 337.123 126.89 339.246 128.286 341.336C129.682 343.425 131.129 345.48 132.627 347.5C134.124 349.519 135.671 351.5 137.266 353.443C138.86 355.386 140.501 357.289 142.19 359.151C143.878 361.014 145.611 362.834 147.388 364.612C149.166 366.389 150.986 368.122 152.849 369.81C154.711 371.499 156.614 373.14 158.557 374.734C160.5 376.329 162.481 377.875 164.5 379.373C166.52 380.871 168.575 382.318 170.664 383.714C172.754 385.11 174.877 386.455 177.034 387.747C179.19 389.039 181.376 390.278 183.594 391.463C185.81 392.648 188.055 393.778 190.327 394.852C192.6 395.927 194.897 396.946 197.22 397.908C199.542 398.87 201.887 399.775 204.253 400.621C206.621 401.468 209.007 402.257 211.413 402.986C213.818 403.716 216.239 404.386 218.678 404.997C221.116 405.608 223.568 406.158 226.034 406.649C228.5 407.139 230.975 407.568 233.462 407.937C235.949 408.306 238.443 408.614 240.945 408.86C243.447 409.106 245.953 409.292 248.463 409.415C250.974 409.538 253.486 409.6 256 409.601C258.514 409.6 261.026 409.538 263.537 409.415C266.047 409.292 268.553 409.106 271.055 408.86C273.557 408.614 276.051 408.306 278.538 407.937C281.024 407.569 283.5 407.139 285.966 406.649C288.432 406.159 290.884 405.608 293.322 404.997C295.761 404.386 298.182 403.716 300.588 402.986C302.993 402.256 305.38 401.468 307.747 400.621C310.113 399.775 312.458 398.87 314.78 397.908C317.103 396.946 319.4 395.927 321.673 394.852C323.945 393.778 326.189 392.648 328.406 391.463C330.624 390.278 332.81 389.039 334.966 387.747C337.123 386.455 339.245 385.11 341.336 383.714C343.425 382.317 345.48 380.871 347.5 379.373C349.519 377.876 351.5 376.329 353.443 374.734C355.386 373.14 357.289 371.499 359.151 369.81C361.014 368.122 362.834 366.389 364.612 364.612"/>
                     </svg>
                 </div>
-                <div>
+                <div class="header-title-container">
                     <div class="header-title">MicYou</div>
-                    <div class="header-subtitle">Web Client</div>
+                    <div class="header-subtitle" x-text="'Web Client'"></div>
                 </div>
             </div>
-            <div class="lang-dropdown">
-                <button class="lang-trigger" :class="{ open: langOpen }" @click="toggleLangMenu()">
+            
+            <div class="lang-dropdown" @keydown.escape="langOpen = false" @click.away="langOpen = false">
+                <button class="lang-trigger" :class="{ open: langOpen }" @click="toggleLangMenu()" aria-haspopup="true" :aria-expanded="langOpen">
                     <svg class="lang-globe" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" x-html="SVG_LANG_GLOBE"></svg>
-                    <span class="lang-label" x-text="lang === 'zh' ? '中' : 'EN'"></span>
+                    <span class="lang-label" x-text="lang === 'zh' ? '中文' : 'EN'"></span>
                     <svg class="lang-chevron" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" x-html="SVG_CHEVRON_DOWN"></svg>
                 </button>
-                <div class="lang-menu-backdrop" x-show="langOpen" @click="langOpen = false"></div>
+                <div class="lang-menu-backdrop" :class="{ open: langOpen }" @click="langOpen = false"></div>
                 <div class="lang-menu" :class="langOpen ? 'open' : 'closed'">
                     <button class="lang-menu-item" :class="{ active: lang === 'zh' }" @click="setLang('zh'); langOpen = false">
-                        <span>中文</span>
+                        <span>简体中文</span>
                         <svg class="check-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" x-html="SVG_CHECK"></svg>
                     </button>
                     <button class="lang-menu-item" :class="{ active: lang === 'en' }" @click="setLang('en'); langOpen = false">
@@ -671,63 +646,81 @@
             </div>
         </div>
 
-        <div class="card main-control-card">
-            <div class="status-icon-wrap" :class="streamState" id="statusIconWrap">
-                <svg id="statusIcon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" x-html="statusIconSvg"></svg>
-            </div>
-            <div class="status-text-row">
-                <span class="status-text" :class="streamState" id="statusText" x-text="statusLabel"></span>
-                <span class="live-badge" :class="{ visible: streamState === 'streaming' }" id="liveBadge">LIVE</span>
-            </div>
-            <div class="error-message" :class="{ visible: streamState === 'error' && errorMessage }" id="errorMessage" x-text="errorMessage"></div>
-
-            <div class="visualizer-ring" :class="{ active: streamState === 'streaming' }" id="visualizerRing">
-                <div class="visualizer-ring-inner"></div>
-                <div class="visualizer-ring-ripple"></div>
-                <div class="visualizer-ring-ripple"></div>
-                <div class="visualizer-ring-ripple"></div>
+        <div class="main-card">
+            <div class="status-header">
+                <div class="status-icon-wrap" :class="streamState">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" x-html="statusIconSvg"></svg>
+                </div>
+                <div class="status-text-row">
+                    <span class="status-text" :class="streamState" x-text="statusLabel"></span>
+                    <span class="live-badge" :class="{ visible: streamState === 'streaming' }">LIVE</span>
+                </div>
+                <div class="error-message" :class="{ visible: streamState === 'error' && errorMessage }" x-text="errorMessage"></div>
             </div>
 
-            <div class="main-btn-wrap">
-                <div class="main-btn-glow" :class="{ active: streamState === 'streaming' }" id="mainBtnGlow"></div>
-                <button class="main-btn idle" :class="mainBtnClass" id="mainBtn" @click="onMainButtonClick()">
-                    <svg id="mainBtnIcon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" x-html="mainBtnIconSvg"></svg>
-                </button>
-            </div>
+            <div class="center-action">
+                <div class="visualizer-ring" :class="{ active: streamState === 'streaming' }">
+                    <div class="visualizer-ring-inner"></div>
+                    <div class="visualizer-ring-ripple"></div>
+                    <div class="visualizer-ring-ripple"></div>
+                    <div class="visualizer-ring-ripple"></div>
+                </div>
 
-            <div class="audio-level" x-show="streamState === 'streaming'"><div id="levelBar" class="audio-level-bar" :style="'width: ' + audioLevel + '%'"></div></div>
-        </div>
-
-        <div class="bottom-bar">
-            <div class="bottom-left">
-                <button class="pill-btn mute-btn" :class="{ muted: isMuted }" id="muteBtn" @click="toggleMute()">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" x-html="muteIconSvg"></svg>
-                    <span id="muteLabel" x-text="muteLabel"></span>
-                </button>
-                <button class="pill-btn help-btn" @click="showHelp = !showHelp">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" x-html="SVG_HELP"></svg>
-                </button>
-            </div>
-            <div class="status-dot" :class="streamState !== 'idle' ? streamState : ''" id="statusDot"></div>
-        </div>
-
-        <div class="help-overlay" :class="{ visible: showHelp }" @click.self="showHelp = false">
-            <div class="help-sheet">
-                <div class="help-sheet-handle"></div>
-                <div class="help-sheet-header">
-                    <h3 x-text="helpTitle"></h3>
-                    <button class="help-close-btn" @click="showHelp = false">
-                        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="var(--md-on-surface-variant)" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                <div class="main-btn-wrap">
+                    <div class="main-btn-glow" :class="{ active: streamState === 'streaming' }"></div>
+                    <button class="main-btn" :class="mainBtnClass" @click="onMainButtonClick()" :aria-label="statusLabel">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" x-html="mainBtnIconSvg"></svg>
                     </button>
                 </div>
-                <div class="help-sheet-content">
-                    <p x-text="helpStep1"></p>
-                    <p x-text="helpStep2"></p>
-                    <p x-text="helpStep3"></p>
+            </div>
+
+            <div class="audio-level-container" :class="{ visible: streamState === 'streaming' }">
+                <div class="audio-level"><div class="audio-level-bar" :style="'width: ' + audioLevel + '%'"></div></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bottom-island">
+        <div class="bottom-actions">
+            <button class="icon-btn mute-btn" :class="{ muted: isMuted }" @click="toggleMute()" :aria-label="muteLabel">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" x-html="muteIconSvg"></svg>
+                <span x-text="muteLabel"></span>
+            </button>
+            <button class="icon-btn round" @click="showHelp = true" aria-label="Help">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" x-html="SVG_HELP"></svg>
+            </button>
+        </div>
+        <div class="island-status">
+            <div class="status-dot" :class="streamState !== 'idle' ? streamState : ''"></div>
+        </div>
+    </div>
+
+    <div class="help-overlay" :class="{ visible: showHelp }" @click.self="showHelp = false">
+        <div class="help-sheet">
+            <div class="help-sheet-handle"></div>
+            <div class="help-sheet-header">
+                <h3 x-text="helpTitle"></h3>
+                <button class="help-close-btn" @click="showHelp = false">
+                    <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+            <div class="help-sheet-content">
+                <div class="help-step">
+                    <div class="help-step-icon">1</div>
+                    <div class="help-step-text" x-text="helpStep1"></div>
+                </div>
+                <div class="help-step">
+                    <div class="help-step-icon">2</div>
+                    <div class="help-step-text" x-text="helpStep2"></div>
+                </div>
+                <div class="help-step">
+                    <div class="help-step-icon">3</div>
+                    <div class="help-step-text" x-text="helpStep3"></div>
                 </div>
             </div>
         </div>
     </div>
+
     <script>
         const AUDIO_WORKLET_CODE = `
             class MicYouProcessor extends AudioWorkletProcessor {
@@ -801,8 +794,7 @@
                 },
 
                 get mainBtnClass() {
-                    let cls = 'main-btn ' + this.streamState;
-                    return cls;
+                    return 'idle ' + this.streamState;
                 },
 
                 get muteIconSvg() {
@@ -813,14 +805,16 @@
                 get SVG_LANG_GLOBE() { return SVG_LANG_GLOBE; },
                 get SVG_CHEVRON_DOWN() { return SVG_CHEVRON_DOWN; },
                 get SVG_CHECK() { return SVG_CHECK; },
+                get SVG_CHECK_CIRCLE() { return SVG_CHECK_CIRCLE; },
+                get SVG_ERROR() { return SVG_ERROR; },
 
                 get statusLabel() {
                     if (this.streamState === 'error') return this.lang === 'zh' ? '麦克风访问失败，请检查权限' : 'Microphone access failed, check permissions';
                     const labels = {
-                        idle: { zh: '点击开始', en: 'Click to start' },
-                        acquiring: { zh: '获取麦克风权限...', en: 'Requesting Microphone...' },
-                        connecting: { zh: '连接服务器...', en: 'Connecting to Server...' },
-                        streaming: { zh: '传输中', en: 'Streaming' }
+                        idle: { zh: '点击开始连接', en: 'Tap to connect' },
+                        acquiring: { zh: '获取麦克风权限...', en: 'Requesting Mic...' },
+                        connecting: { zh: '连接服务器...', en: 'Connecting...' },
+                        streaming: { zh: '正在收音', en: 'Streaming Audio' }
                     };
                     return labels[this.streamState]?.[this.lang] || '';
                 },
@@ -836,15 +830,15 @@
                 },
 
                 get helpStep1() {
-                    return this.lang === 'zh' ? '1. 点击中央按钮开始传输音频' : '1. Click the center button to start audio streaming';
+                    return this.lang === 'zh' ? '点击中央按钮开始传输音频，连接电脑端' : 'Click the center button to start audio streaming to your PC';
                 },
 
                 get helpStep2() {
-                    return this.lang === 'zh' ? '2. 浏览器会请求麦克风权限，请点击允许' : '2. Browser will request microphone permission, please allow it';
+                    return this.lang === 'zh' ? '浏览器会请求麦克风权限，请点击允许' : 'Your browser will request microphone permission, please allow it';
                 },
 
                 get helpStep3() {
-                    return this.lang === 'zh' ? '3. 首次访问需信任自签名证书，点击「继续」即可' : '3. First visit requires trusting self-signed certificate, click Continue';
+                    return this.lang === 'zh' ? '首次访问需信任自签名证书，点击「继续」即可' : 'First visit requires trusting self-signed certificate, click Continue';
                 },
 
                 setLang(l) {
@@ -868,7 +862,7 @@
                     this.toastVisible = true;
                     this.toastTimer = setTimeout(() => {
                         this.toastVisible = false;
-                    }, 2000);
+                    }, 2500);
                 },
 
                 onMainButtonClick() {
@@ -886,7 +880,7 @@
                     const msg = this.isMuted
                         ? (this.lang === 'zh' ? '已静音' : 'Muted')
                         : (this.lang === 'zh' ? '已取消静音' : 'Unmuted');
-                    this.showToast(msg);
+                    this.showToast(msg, 'success');
                 },
 
                 async startStreaming() {
@@ -918,9 +912,10 @@
                         this.ws.onopen = () => {
                             this.streamState = 'streaming';
                             this.showToast(
-                                this.lang === 'zh' ? '音频传输中' : 'Streaming Audio',
+                                this.lang === 'zh' ? '连接成功，正在传输' : 'Connected, streaming audio',
                                 'success'
                             );
+                            this.vibrate([10, 50, 10]);
                         };
 
                         this.ws.onmessage = (e) => {
@@ -941,7 +936,7 @@
 
                         this.ws.onerror = () => {
                             this.errorMessage = this.lang === 'zh'
-                                ? '连接失败，请检查网络'
+                                ? '连接失败，请检查网络或刷新重试'
                                 : 'Connection Error, please check network';
                             this.showToast(this.errorMessage, 'error');
                             this.streamState = 'error';
@@ -954,15 +949,16 @@
                                 if (this.isMuted) {
                                     const silentData = new Float32Array(inputData.length);
                                     this.ws.send(silentData.buffer);
+                                    this.audioLevel = 0;
                                 } else {
                                     this.ws.send(inputData.buffer);
+                                    let sum = 0;
+                                    for (let i = 0; i < inputData.length; i++) {
+                                        sum += inputData[i] * inputData[i];
+                                    }
+                                    const rms = Math.sqrt(sum / inputData.length);
+                                    this.audioLevel = Math.min(100, rms * 500);
                                 }
-                                let sum = 0;
-                                for (let i = 0; i < inputData.length; i++) {
-                                    sum += inputData[i] * inputData[i];
-                                }
-                                const rms = Math.sqrt(sum / inputData.length);
-                                this.audioLevel = Math.min(100, rms * 500);
                             }
                         };
 
@@ -970,8 +966,8 @@
                         this.workletNode.connect(this.audioContext.destination);
 
                     } catch (err) {
-                        const msgZh = '麦克风访问失败，请在浏览器设置中允许麦克风权限';
-                        const msgEn = 'Microphone access failed. Allow microphone permission in browser settings';
+                        const msgZh = '访问麦克风失败，请在浏览器设置中允许麦克风权限并刷新';
+                        const msgEn = 'Microphone access failed. Allow permission in settings and refresh';
                         this.errorMessage = this.lang === 'zh' ? msgZh : msgEn;
                         this.showToast(this.errorMessage, 'error');
                         this.streamState = 'error';
