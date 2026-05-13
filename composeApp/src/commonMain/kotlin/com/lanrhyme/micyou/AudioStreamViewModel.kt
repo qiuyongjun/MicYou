@@ -377,7 +377,10 @@ class AudioStreamViewModel : ViewModel() {
         val current = _uiState.value
 
         val updatedPort = when {
-            mode == ConnectionMode.Web -> Constants.DEFAULT_WEB_PORT.toString()
+            mode == ConnectionMode.Web -> {
+                val parsed = current.port.toIntOrNull()
+                if (parsed == null || parsed <= 0) Constants.DEFAULT_WEB_PORT.toString() else current.port
+            }
             platformType == PlatformType.Android && mode == ConnectionMode.Usb -> {
                 val parsed = current.port.toIntOrNull()
                 if (parsed == null || parsed <= 0) Constants.DEFAULT_TCP_PORT.toString() else current.port

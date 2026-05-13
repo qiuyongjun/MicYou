@@ -484,21 +484,15 @@ private fun NetworkConfigCard(
                     }
                 }
 
-                AnimatedVisibility(
-                    visible = state.mode != ConnectionMode.Web,
-                    enter = fadeIn(tween(200)) + scaleIn(initialScale = 0.9f),
-                    exit = fadeOut(tween(150)) + scaleOut(targetScale = 0.9f)
-                ) {
-                    OutlinedTextField(
-                        value = state.port,
-                        onValueChange = { viewModel.setPort(it) },
-                        label = { Text(stringResource(Res.string.portLabel)) },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 60.dp),
-                        textStyle = MaterialTheme.typography.bodySmall,
-                        singleLine = true,
-                        shape = MaterialTheme.shapes.medium
-                    )
-                }
+                OutlinedTextField(
+                    value = state.port,
+                    onValueChange = { viewModel.setPort(it) },
+                    label = { Text(stringResource(Res.string.portLabel)) },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 60.dp),
+                    textStyle = MaterialTheme.typography.bodySmall,
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium
+                )
 
                 AnimatedVisibility(
                     visible = state.mode == ConnectionMode.Web,

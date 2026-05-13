@@ -538,7 +538,7 @@ private fun ConnectionConfigCard(
 
             // IP/Port input
             AnimatedVisibility(
-                visible = isClient && state.mode != ConnectionMode.Usb,
+                visible = isClient,
                 enter = fadeIn(tween(300)) + expandVertically(),
                 exit = fadeOut(tween(200)) + shrinkVertically()
             ) {

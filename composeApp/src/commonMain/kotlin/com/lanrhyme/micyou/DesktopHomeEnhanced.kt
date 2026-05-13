@@ -576,19 +576,19 @@ private fun LeftPanel(
             enableHaze = state.backgroundSettings.enableHazeEffect
         )
         
+        PortCard(
+            port = state.port,
+            onPortChange = { viewModel.setPort(it) },
+            cardOpacity = cardOpacity,
+            hazeState = hazeState,
+            enableHaze = state.backgroundSettings.enableHazeEffect
+        )
+
         if (state.mode == ConnectionMode.Web) {
             QrCodeCard(
                 webUrl = state.webUrl,
                 webClientCount = state.webClientCount,
                 streamState = state.streamState,
-                cardOpacity = cardOpacity,
-                hazeState = hazeState,
-                enableHaze = state.backgroundSettings.enableHazeEffect
-            )
-        } else {
-            PortCard(
-                port = state.port,
-                onPortChange = { viewModel.setPort(it) },
                 cardOpacity = cardOpacity,
                 hazeState = hazeState,
                 enableHaze = state.backgroundSettings.enableHazeEffect
