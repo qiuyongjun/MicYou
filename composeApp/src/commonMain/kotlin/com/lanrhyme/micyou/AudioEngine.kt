@@ -8,6 +8,10 @@ expect class AudioEngine() {
     val streamState: Flow<StreamState>
     // 音频电平流（用于可视化）
     val audioLevels: Flow<Float>
+    // 原始音频频谱流
+    val rawSpectrum: Flow<FloatArray>
+    // 处理后音频频谱流
+    val processedSpectrum: Flow<FloatArray>
     // 详细音频电平数据流（包含 RMS、峰值、dB）
     val audioLevelData: Flow<AudioLevelData>
     // 音频指标流（比特率、延迟）
@@ -32,14 +36,20 @@ expect class AudioEngine() {
     fun updateConfig(
         enableNS: Boolean,
         nsType: NoiseReductionType,
+        nsIntensity: Float,
         enableAGC: Boolean,
         agcTargetLevel: Int,
+        agcAttackRate: Float,
+        agcDecayRate: Float,
         enableVAD: Boolean,
         vadThreshold: Int,
         enableDereverb: Boolean,
         dereverbLevel: Float,
-        amplification: Float
+        amplification: Float,
+        processingChain: List<AudioEffectType>,
+        equalizerConfig: EqualizerConfig = EqualizerConfig()
     )
+
 
     // 更新性能配置
     fun updatePerformanceConfig(config: PerformanceConfig)

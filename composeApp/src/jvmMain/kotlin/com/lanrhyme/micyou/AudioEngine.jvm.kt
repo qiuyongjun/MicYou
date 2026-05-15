@@ -2,6 +2,7 @@ package com.lanrhyme.micyou
 
 import com.lanrhyme.micyou.audio.AudioOutputManager
 import com.lanrhyme.micyou.audio.AudioProcessorPipeline
+import com.lanrhyme.micyou.audio.AudioSpectrumAnalyzer
 import micyou.composeapp.generated.resources.Res
 import micyou.composeapp.generated.resources.errorAdbReverseFailed
 import org.jetbrains.compose.resources.getString
@@ -26,6 +27,16 @@ actual class AudioEngine actual constructor() {
     actual val streamState: Flow<StreamState> = _state
     private val _audioLevels = MutableStateFlow(0f)
     actual val audioLevels: Flow<Float> = _audioLevels
+    
+    private val _rawSpectrum = MutableStateFlow(FloatArray(0))
+    actual val rawSpectrum: Flow<FloatArray> = _rawSpectrum.asStateFlow()
+    
+    private val _processedSpectrum = MutableStateFlow(FloatArray(0))
+    actual val processedSpectrum: Flow<FloatArray> = _processedSpectrum.asStateFlow()
+    
+    private val rawSpectrumAnalyzer = AudioSpectrumAnalyzer()
+    private val processedSpectrumAnalyzer = AudioSpectrumAnalyzer()
+
     private val _audioLevelData = MutableStateFlow(AudioLevelData.SILENT)
     actual val audioLevelData: Flow<AudioLevelData> = _audioLevelData
     private val _audioMetrics = MutableStateFlow<AudioMetrics?>(null)
@@ -168,22 +179,33 @@ actual class AudioEngine actual constructor() {
                     currentChannelCount = audioPacket.channelCount
                     currentAudioFormatValue = audioPacket.audioFormat
 
-                    val processedBuffer = audioPipeline.process(
-                        inputBuffer = audioPacket.buffer,
-                        audioFormat = audioPacket.audioFormat,
-                        channelCount = audioPacket.channelCount,
-                        queuedDurationMs = queuedMs
-                    )
+                    // 计算原始频谱 (Raw Spectrum)
+                    val rawShorts = audioPipeline.convertToShorts(audioPacket.buffer, audioPacket.audioFormat)
+                    if (rawShorts != null) {
+                        _rawSpectrum.value = rawSpectrumAnalyzer.calculateSpectrum(rawShorts)
 
-                    if (processedBuffer != null) {
-                        audioOutputManager.write(processedBuffer, 0, processedBuffer.size)
-    val levelData = calculateAudioLevelData(processedBuffer)
-                        _audioLevels.value = levelData.rms
-                        _audioLevelData.value = levelData
+                        val processedBuffer = audioPipeline.process(
+                            inputShorts = rawShorts,
+                            channelCount = audioPacket.channelCount,
+                            sampleRate = audioPacket.sampleRate,
+                            queuedDurationMs = queuedMs
+                        )
 
-                        // 更新音频指标
-                        updateAudioMetrics(queuedMs)
+                        if (processedBuffer != null) {
+                            // 计算处理后频谱 (Processed Spectrum)
+                            // 注意：processedBuffer 始终是 16-bit PCM (value = 2)
+                            _processedSpectrum.value = processedSpectrumAnalyzer.calculateSpectrumFromBytes(processedBuffer)
+
+                            audioOutputManager.write(processedBuffer, 0, processedBuffer.size)
+                            val levelData = calculateAudioLevelData(processedBuffer)
+                            _audioLevels.value = levelData.rms
+                            _audioLevelData.value = levelData
+
+                            // 更新音频指标
+                            updateAudioMetrics(queuedMs)
+                        }
                     }
+
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
@@ -210,22 +232,38 @@ actual class AudioEngine actual constructor() {
     actual fun updateConfig(
         enableNS: Boolean,
         nsType: NoiseReductionType,
+        nsIntensity: Float,
         enableAGC: Boolean,
         agcTargetLevel: Int,
+        agcAttackRate: Float,
+        agcDecayRate: Float,
         enableVAD: Boolean,
         vadThreshold: Int,
         enableDereverb: Boolean,
         dereverbLevel: Float,
-        amplification: Float
+        amplification: Float,
+        processingChain: List<AudioEffectType>,
+        equalizerConfig: EqualizerConfig
     ) {
         audioPipeline.updateConfig(
-            enableNS, nsType, enableAGC, agcTargetLevel,
-            enableVAD, vadThreshold, enableDereverb, dereverbLevel,
-            amplification
+            enableNS = enableNS,
+            nsType = nsType,
+            nsIntensity = nsIntensity,
+            enableAGC = enableAGC,
+            agcTargetLevel = agcTargetLevel,
+            agcAttackRate = agcAttackRate,
+            agcDecayRate = agcDecayRate,
+            enableVAD = enableVAD,
+            vadThreshold = vadThreshold,
+            enableDereverb = enableDereverb,
+            dereverbLevel = dereverbLevel,
+            amplification = amplification,
+            newProcessingChain = processingChain,
+            equalizerConfig = equalizerConfig
         )
         
         if (System.getProperty("micyou.debugAudioConfig") == "true") {
-            Logger.d("AudioEngine", "配置更新: 放大器=$amplification, VAD=$enableVAD ($vadThreshold), AGC=$enableAGC ($agcTargetLevel), NS=$enableNS ($nsType)")
+            Logger.d("AudioEngine", "配置更新: 放大器=$amplification, VAD=$enableVAD ($vadThreshold), AGC=$enableAGC ($agcTargetLevel), NS=$enableNS ($nsType, $nsIntensity), EQ=${equalizerConfig.enabled}")
         }
     }
 

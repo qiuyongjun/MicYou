@@ -24,3 +24,24 @@ enum class AudioFormat(val value: Int, val label: String, val bitsPerSample: Int
     PCM_FLOAT(4, "32-bit Float", 32) // AudioFormat.ENCODING_PCM_FLOAT = 4
 }
 
+/**
+ * 音频处理效果类型
+ */
+enum class AudioEffectType(val label: String) {
+    NoiseReduction("降噪"),
+    Dereverb("去混响"),
+    Amplifier("增益放大"),
+    AGC("自动增益 (AGC)"),
+    VAD("语音检测 (VAD)"),
+    Equalizer("均衡器 (EQ)")
+}
+
+/**
+ * 均衡器配置
+ */
+data class EqualizerConfig(
+    val enabled: Boolean = false,
+    val gains: List<Float> = List(10) { 0f }, // 10 bands, 0dB each
+    val preAmp: Float = 0f // Pre-amp gain in dB
+)
+

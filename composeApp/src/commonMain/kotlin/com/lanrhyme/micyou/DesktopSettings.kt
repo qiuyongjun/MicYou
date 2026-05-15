@@ -1,7 +1,6 @@
 package com.lanrhyme.micyou
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -12,8 +11,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,16 +26,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.TextSnippet
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
@@ -52,6 +51,7 @@ import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.People
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -69,7 +69,6 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -77,8 +76,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -91,9 +88,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -102,15 +100,142 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.lanrhyme.micyou.animation.EasingFunctions
 import com.lanrhyme.micyou.theme.ExpressiveCard
-import com.lanrhyme.micyou.theme.ExpressiveElevatedCard
-import com.lanrhyme.micyou.theme.ExpressiveFilterChip
-import com.lanrhyme.micyou.theme.ExpressiveSlider
-import com.lanrhyme.micyou.theme.ExpressiveSwitch
-import com.lanrhyme.micyou.theme.SuperRoundedShape
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.delay
-import micyou.composeapp.generated.resources.*
 import micyou.composeapp.generated.resources.Res
+import micyou.composeapp.generated.resources.aboutSection
+import micyou.composeapp.generated.resources.agcAttackRateLabel
+import micyou.composeapp.generated.resources.agcDecayRateLabel
+import micyou.composeapp.generated.resources.agcTargetLabel
+import micyou.composeapp.generated.resources.appearanceSection
+import micyou.composeapp.generated.resources.audioFormatLabel
+import micyou.composeapp.generated.resources.audioProcessingChainTitle
+import micyou.composeapp.generated.resources.audioSection
+import micyou.composeapp.generated.resources.audioSourceLabel
+import micyou.composeapp.generated.resources.autoCheckUpdateDesc
+import micyou.composeapp.generated.resources.autoCheckUpdateLabel
+import micyou.composeapp.generated.resources.autoConfigDesc
+import micyou.composeapp.generated.resources.autoConfigLabel
+import micyou.composeapp.generated.resources.autoStartDesc
+import micyou.composeapp.generated.resources.autoStartLabel
+import micyou.composeapp.generated.resources.backgroundBlurLabel
+import micyou.composeapp.generated.resources.backgroundBrightnessLabel
+import micyou.composeapp.generated.resources.backgroundSettingsLabel
+import micyou.composeapp.generated.resources.cancel
+import micyou.composeapp.generated.resources.cardOpacityLabel
+import micyou.composeapp.generated.resources.channelCountLabel
+import micyou.composeapp.generated.resources.checkUpdate
+import micyou.composeapp.generated.resources.clearBackgroundImage
+import micyou.composeapp.generated.resources.close
+import micyou.composeapp.generated.resources.closeActionExit
+import micyou.composeapp.generated.resources.closeActionLabel
+import micyou.composeapp.generated.resources.closeActionMinimize
+import micyou.composeapp.generated.resources.closeActionPrompt
+import micyou.composeapp.generated.resources.contributorsDesc
+import micyou.composeapp.generated.resources.contributorsLabel
+import micyou.composeapp.generated.resources.dereverbLevelLabel
+import micyou.composeapp.generated.resources.developerLabel
+import micyou.composeapp.generated.resources.dynamicColorEnabledHint
+import micyou.composeapp.generated.resources.enableAgcLabel
+import micyou.composeapp.generated.resources.enableDereverbLabel
+import micyou.composeapp.generated.resources.enableEqualizerLabel
+import micyou.composeapp.generated.resources.enableHazeEffectDesc
+import micyou.composeapp.generated.resources.enableHazeEffectLabel
+import micyou.composeapp.generated.resources.enableNsLabel
+import micyou.composeapp.generated.resources.enableStreamingNotificationLabel
+import micyou.composeapp.generated.resources.enableVadLabel
+import micyou.composeapp.generated.resources.equalizerBandsLabel
+import micyou.composeapp.generated.resources.equalizerBrightVocalPreset
+import micyou.composeapp.generated.resources.equalizerDeepVoicePreset
+import micyou.composeapp.generated.resources.equalizerNormalPreset
+import micyou.composeapp.generated.resources.equalizerPodcastPreset
+import micyou.composeapp.generated.resources.equalizerPreAmpLabel
+import micyou.composeapp.generated.resources.equalizerPresetsLabel
+import micyou.composeapp.generated.resources.equalizerSection
+import micyou.composeapp.generated.resources.equalizerVocalClarityPreset
+import micyou.composeapp.generated.resources.equalizerWarmVocalPreset
+import micyou.composeapp.generated.resources.exportLog
+import micyou.composeapp.generated.resources.exportLogDesc
+import micyou.composeapp.generated.resources.floatingWindowDesc
+import micyou.composeapp.generated.resources.floatingWindowLabel
+import micyou.composeapp.generated.resources.gainLabel
+import micyou.composeapp.generated.resources.generalSection
+import micyou.composeapp.generated.resources.githubRepoLabel
+import micyou.composeapp.generated.resources.introText
+import micyou.composeapp.generated.resources.keepScreenOnDesc
+import micyou.composeapp.generated.resources.keepScreenOnLabel
+import micyou.composeapp.generated.resources.languageLabel
+import micyou.composeapp.generated.resources.licensesTitle
+import micyou.composeapp.generated.resources.logExportFailed
+import micyou.composeapp.generated.resources.logExported
+import micyou.composeapp.generated.resources.mirrorCdkDesc
+import micyou.composeapp.generated.resources.mirrorCdkGetLink
+import micyou.composeapp.generated.resources.mirrorCdkLabel
+import micyou.composeapp.generated.resources.mirrorCdkPlaceholder
+import micyou.composeapp.generated.resources.mirrorDownloadDesc
+import micyou.composeapp.generated.resources.mirrorDownloadLabel
+import micyou.composeapp.generated.resources.nsAlgorithmAlternative
+import micyou.composeapp.generated.resources.nsAlgorithmCloseButton
+import micyou.composeapp.generated.resources.nsAlgorithmHelpTitle
+import micyou.composeapp.generated.resources.nsAlgorithmLightweight
+import micyou.composeapp.generated.resources.nsAlgorithmRNNoiseDesc
+import micyou.composeapp.generated.resources.nsAlgorithmRNNoiseTitle
+import micyou.composeapp.generated.resources.nsAlgorithmRecommended
+import micyou.composeapp.generated.resources.nsAlgorithmSpeexdspDesc
+import micyou.composeapp.generated.resources.nsAlgorithmSpeexdspTitle
+import micyou.composeapp.generated.resources.nsAlgorithmUlnasDesc
+import micyou.composeapp.generated.resources.nsAlgorithmUlnasTitle
+import micyou.composeapp.generated.resources.nsIntensityLabel
+import micyou.composeapp.generated.resources.nsTypeLabel
+import micyou.composeapp.generated.resources.ok
+import micyou.composeapp.generated.resources.oledPureBlackDesc
+import micyou.composeapp.generated.resources.oledPureBlackLabel
+import micyou.composeapp.generated.resources.openSourceLicense
+import micyou.composeapp.generated.resources.paletteStyleDesc
+import micyou.composeapp.generated.resources.paletteStyleLabel
+import micyou.composeapp.generated.resources.performanceDefault
+import micyou.composeapp.generated.resources.performanceDefaultDescription
+import micyou.composeapp.generated.resources.performanceHighQuality
+import micyou.composeapp.generated.resources.performanceHighQualityDescription
+import micyou.composeapp.generated.resources.performanceInfoDescription
+import micyou.composeapp.generated.resources.performanceInfoTitle
+import micyou.composeapp.generated.resources.performanceLabel
+import micyou.composeapp.generated.resources.performanceLowLatency
+import micyou.composeapp.generated.resources.performanceLowLatencyDescription
+import micyou.composeapp.generated.resources.pluginsSection
+import micyou.composeapp.generated.resources.pocketModeDesc
+import micyou.composeapp.generated.resources.pocketModeLabel
+import micyou.composeapp.generated.resources.processingChainDesc
+import micyou.composeapp.generated.resources.realTimeSpectrumLabel
+import micyou.composeapp.generated.resources.sampleRateLabel
+import micyou.composeapp.generated.resources.selectBackgroundImage
+import micyou.composeapp.generated.resources.settingsTitle
+import micyou.composeapp.generated.resources.softwareIntro
+import micyou.composeapp.generated.resources.themeColorLabel
+import micyou.composeapp.generated.resources.themeDark
+import micyou.composeapp.generated.resources.themeLabel
+import micyou.composeapp.generated.resources.themeLight
+import micyou.composeapp.generated.resources.themeSystem
+import micyou.composeapp.generated.resources.useDynamicColorDesc
+import micyou.composeapp.generated.resources.useDynamicColorLabel
+import micyou.composeapp.generated.resources.useExpressiveShapesDesc
+import micyou.composeapp.generated.resources.useExpressiveShapesLabel
+import micyou.composeapp.generated.resources.useSystemTitleBarDesc
+import micyou.composeapp.generated.resources.useSystemTitleBarLabel
+import micyou.composeapp.generated.resources.vadThresholdLabel
+import micyou.composeapp.generated.resources.vbcableInstall
+import micyou.composeapp.generated.resources.vbcableInstalled
+import micyou.composeapp.generated.resources.vbcableNotInstalled
+import micyou.composeapp.generated.resources.vbcableSettingsLabel
+import micyou.composeapp.generated.resources.versionLabel
+import micyou.composeapp.generated.resources.viewLibraries
+import micyou.composeapp.generated.resources.visualizerStyleBars
+import micyou.composeapp.generated.resources.visualizerStyleGlow
+import micyou.composeapp.generated.resources.visualizerStyleLabel
+import micyou.composeapp.generated.resources.visualizerStyleParticles
+import micyou.composeapp.generated.resources.visualizerStyleRipple
+import micyou.composeapp.generated.resources.visualizerStyleVolumeRing
+import micyou.composeapp.generated.resources.visualizerStyleWave
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
@@ -199,6 +324,7 @@ enum class SettingsSection {
     General,
     Appearance,
     Audio,
+    Equalizer,
     Plugins,
     About
 }
@@ -342,6 +468,7 @@ fun DesktopLayout(viewModel: MainViewModel, onClose: () -> Unit, contentVisible:
                         SettingsSection.General -> Icons.Rounded.Settings
                         SettingsSection.Appearance -> Icons.Rounded.Palette
                         SettingsSection.Audio -> Icons.Rounded.Mic
+                        SettingsSection.Equalizer -> Icons.Rounded.Tune
                         SettingsSection.Plugins -> Icons.Rounded.Extension
                         SettingsSection.About -> Icons.Rounded.Info
                     }
@@ -1099,7 +1226,25 @@ fun SettingsContent(section: SettingsSection, viewModel: MainViewModel) {
                 } else {
                     // Desktop audio settings
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        // 1. 增益 (Amplifier) - 第一行显示
+                        // 频谱分析仪 (Spectrum Analyzer)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(stringResource(Res.string.realTimeSpectrumLabel), style = MaterialTheme.typography.titleSmall)
+                                Spacer(Modifier.height(8.dp))
+                                SpectrumAnalyzerView(
+                                    rawSpectrumFlow = viewModel.rawSpectrum,
+                                    processedSpectrumFlow = viewModel.processedSpectrum,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+
+                        // 1. 增益 (Amplifier)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1114,14 +1259,13 @@ fun SettingsContent(section: SettingsSection, viewModel: MainViewModel) {
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 Text(stringResource(Res.string.gainLabel), style = MaterialTheme.typography.bodyMedium)
-
                                 Slider(
                                     value = state.amplification,
                                     onValueChange = { viewModel.setAmplification(it) },
                                     valueRange = -50.0f..50.0f,
                                     modifier = Modifier.weight(1f)
                                 )
-    val gainText = if (state.amplification >= 0) "+${state.amplification.toInt()} dB" else "${state.amplification.toInt()} dB"
+                                val gainText = if (state.amplification >= 0) "+${state.amplification.toInt()} dB" else "${state.amplification.toInt()} dB"
                                 Text(
                                     gainText,
                                     style = MaterialTheme.typography.bodySmall,
@@ -1138,114 +1282,53 @@ fun SettingsContent(section: SettingsSection, viewModel: MainViewModel) {
                                 .clip(MaterialTheme.shapes.medium)
                                 .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
                         ) {
-                            ListItem(
-                                headlineContent = { Text(stringResource(Res.string.enableNsLabel)) },
-                                trailingContent = { 
-                                    Switch(
-                                        checked = state.enableNS, 
-                                        onCheckedChange = { viewModel.setEnableNS(it) }
-                                    ) 
-                                },
-                                modifier = Modifier.clickable { viewModel.setEnableNS(!state.enableNS) },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                            )
-                        }
-                        if (state.enableNS) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
-                            ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(stringResource(Res.string.nsTypeLabel), style = MaterialTheme.typography.bodyMedium)
-    var showHelp by remember { mutableStateOf(false) }
-                                        IconButton(onClick = { showHelp = true }) {
-                                            Icon(Icons.Default.Info, contentDescription = "Help", modifier = Modifier.size(20.dp))
+                            Column {
+                                ListItem(
+                                    headlineContent = { Text(stringResource(Res.string.enableNsLabel)) },
+                                    trailingContent = { 
+                                        Switch(
+                                            checked = state.enableNS, 
+                                            onCheckedChange = { viewModel.setEnableNS(it) }
+                                        ) 
+                                    },
+                                    modifier = Modifier.clickable { viewModel.setEnableNS(!state.enableNS) },
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                                )
+                                if (state.enableNS) {
+                                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(stringResource(Res.string.nsTypeLabel), style = MaterialTheme.typography.bodyMedium)
+                                            var showHelp by remember { mutableStateOf(false) }
+                                            IconButton(onClick = { showHelp = true }) {
+                                                Icon(Icons.Default.Info, contentDescription = "Help", modifier = Modifier.size(20.dp))
+                                            }
+                                            if (showHelp) {
+                                                NoiseReductionHelpPopup(onDismiss = { showHelp = false })
+                                            }
                                         }
-                                        if (showHelp) {
-                                            NoiseReductionHelpPopup(onDismiss = { showHelp = false })
+                                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            items(NoiseReductionType.entries) { type ->
+                                                FilterChip(
+                                                    selected = state.nsType == type,
+                                                    onClick = { viewModel.setNsType(type) },
+                                                    label = { Text(type.label) }
+                                                )
+                                            }
+                                        }
+                                        if (state.nsType != NoiseReductionType.None) {
+                                            Spacer(Modifier.height(8.dp))
+                                            Text("${stringResource(Res.string.nsIntensityLabel)}: ${(state.nsIntensity * 100).toInt()}%", style = MaterialTheme.typography.bodySmall)
+                                            Slider(
+                                                value = state.nsIntensity,
+                                                onValueChange = { viewModel.setNsIntensity(it) },
+                                                valueRange = 0f..1f
+                                            )
                                         }
                                     }
-                                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        items(NoiseReductionType.entries) { type ->
-                                            FilterChip(
-                                                selected = state.nsType == type,
-                                                onClick = { viewModel.setNsType(type) },
-                                                label = { Text(type.label) }
-        )
-    }
-}
-
-/**
- * VB-Cable management section for Windows platform settings.
- */
-@Composable
-fun VBCableManagementSection(
-    cardOpacity: Float,
-    viewModel: MainViewModel
-) {
-    val state by viewModel.uiState.collectAsState()
-    val isInstalled = isVirtualDeviceInstalled()
-    
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(MaterialTheme.shapes.medium)
-                .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
-        ) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    "VB-Cable 虚拟音频设备",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                
-                Text(
-                    if (isInstalled) stringResource(Res.string.vbcableInstalled) else stringResource(Res.string.vbcableNotInstalled),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Button(
-                        onClick = { viewModel.startVBCableInstallation() },
-                        enabled = !isInstalled,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Rounded.InstallDesktop, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(if (isInstalled) stringResource(Res.string.vbcableInstalled) else stringResource(Res.string.vbcableInstall))
-                    }
-                }
-                
-                // Installation progress indicator
-                state.vbcableInstallProgress?.let { progress ->
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(
-                            progress,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        LinearProgressIndicator(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
                                 }
                             }
                         }
@@ -1257,32 +1340,27 @@ fun VBCableManagementSection(
                                 .clip(MaterialTheme.shapes.medium)
                                 .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
                         ) {
-                            ListItem(
-                                headlineContent = { Text(stringResource(Res.string.enableDereverbLabel)) },
-                                trailingContent = { 
-                                    Switch(
-                                        checked = state.enableDereverb, 
-                                        onCheckedChange = { viewModel.setEnableDereverb(it) }
-                                    ) 
-                                },
-                                modifier = Modifier.clickable { viewModel.setEnableDereverb(!state.enableDereverb) },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                            )
-                        }
-                        if (state.enableDereverb) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
-                            ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text("${stringResource(Res.string.dereverbLevelLabel)}: ${(state.dereverbLevel * 100).toInt()}%", style = MaterialTheme.typography.bodySmall)
-                                    Slider(
-                                        value = state.dereverbLevel,
-                                        onValueChange = { viewModel.setDereverbLevel(it) },
-                                        valueRange = 0f..1f
-                                    )
+                            Column {
+                                ListItem(
+                                    headlineContent = { Text(stringResource(Res.string.enableDereverbLabel)) },
+                                    trailingContent = { 
+                                        Switch(
+                                            checked = state.enableDereverb, 
+                                            onCheckedChange = { viewModel.setEnableDereverb(it) }
+                                        ) 
+                                    },
+                                    modifier = Modifier.clickable { viewModel.setEnableDereverb(!state.enableDereverb) },
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                                )
+                                if (state.enableDereverb) {
+                                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                                        Text("${stringResource(Res.string.dereverbLevelLabel)}: ${(state.dereverbLevel * 100).toInt()}%", style = MaterialTheme.typography.bodySmall)
+                                        Slider(
+                                            value = state.dereverbLevel,
+                                            onValueChange = { viewModel.setDereverbLevel(it) },
+                                            valueRange = 0f..1f
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -1294,32 +1372,43 @@ fun VBCableManagementSection(
                                 .clip(MaterialTheme.shapes.medium)
                                 .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
                         ) {
-                            ListItem(
-                                headlineContent = { Text(stringResource(Res.string.enableAgcLabel)) },
-                                trailingContent = { 
-                                    Switch(
-                                        checked = state.enableAGC, 
-                                        onCheckedChange = { viewModel.setEnableAGC(it) }
-                                    ) 
-                                },
-                                modifier = Modifier.clickable { viewModel.setEnableAGC(!state.enableAGC) },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                            )
-                        }
-                        if (state.enableAGC) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
-                            ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text("${stringResource(Res.string.agcTargetLabel)}: ${state.agcTargetLevel}", style = MaterialTheme.typography.bodySmall)
-                                    Slider(
-                                        value = state.agcTargetLevel.toFloat(),
-                                        onValueChange = { viewModel.setAgcTargetLevel(it.toInt()) },
-                                        valueRange = 0f..100f
-                                    )
+                            Column {
+                                ListItem(
+                                    headlineContent = { Text(stringResource(Res.string.enableAgcLabel)) },
+                                    trailingContent = { 
+                                        Switch(
+                                            checked = state.enableAGC, 
+                                            onCheckedChange = { viewModel.setEnableAGC(it) }
+                                        ) 
+                                    },
+                                    modifier = Modifier.clickable { viewModel.setEnableAGC(!state.enableAGC) },
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                                )
+                                if (state.enableAGC) {
+                                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                                        Text("${stringResource(Res.string.agcTargetLabel)}: ${state.agcTargetLevel}", style = MaterialTheme.typography.bodySmall)
+                                        Slider(
+                                            value = state.agcTargetLevel.toFloat(),
+                                            onValueChange = { viewModel.setAgcTargetLevel(it.toInt()) },
+                                            valueRange = 0f..32767f
+                                        )
+                                        
+                                        Spacer(Modifier.height(8.dp))
+                                        Text("${stringResource(Res.string.agcAttackRateLabel)}: ${String.format("%.3f", state.agcAttackRate)}", style = MaterialTheme.typography.bodySmall)
+                                        Slider(
+                                            value = state.agcAttackRate,
+                                            onValueChange = { viewModel.setAgcAttackRate(it) },
+                                            valueRange = 0.001f..0.1f
+                                        )
+                                        
+                                        Spacer(Modifier.height(8.dp))
+                                        Text("${stringResource(Res.string.agcDecayRateLabel)}: ${String.format("%.3f", state.agcDecayRate)}", style = MaterialTheme.typography.bodySmall)
+                                        Slider(
+                                            value = state.agcDecayRate,
+                                            onValueChange = { viewModel.setAgcDecayRate(it) },
+                                            valueRange = 0.0001f..0.01f
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -1331,37 +1420,98 @@ fun VBCableManagementSection(
                                 .clip(MaterialTheme.shapes.medium)
                                 .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
                         ) {
-                            ListItem(
-                                headlineContent = { Text(stringResource(Res.string.enableVadLabel)) },
-                                trailingContent = { 
-                                    Switch(
-                                        checked = state.enableVAD, 
-                                        onCheckedChange = { viewModel.setEnableVAD(it) }
-                                    ) 
-                                },
-                                modifier = Modifier.clickable { viewModel.setEnableVAD(!state.enableVAD) },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                            )
-                        }
-                        if (state.enableVAD) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
-                            ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text("${stringResource(Res.string.vadThresholdLabel)}: ${state.vadThreshold}", style = MaterialTheme.typography.bodySmall)
-                                    Slider(
-                                        value = state.vadThreshold.toFloat(),
-                                        onValueChange = { viewModel.setVadThreshold(it.toInt()) },
-                                        valueRange = 0f..100f
-                                    )
+                            Column {
+                                ListItem(
+                                    headlineContent = { Text(stringResource(Res.string.enableVadLabel)) },
+                                    trailingContent = { 
+                                        Switch(
+                                            checked = state.enableVAD, 
+                                            onCheckedChange = { viewModel.setEnableVAD(it) }
+                                        ) 
+                                    },
+                                    modifier = Modifier.clickable { viewModel.setEnableVAD(!state.enableVAD) },
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                                )
+                                if (state.enableVAD) {
+                                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                                        Text("${stringResource(Res.string.vadThresholdLabel)}: ${state.vadThreshold}", style = MaterialTheme.typography.bodySmall)
+                                        Slider(
+                                            value = state.vadThreshold.toFloat(),
+                                            onValueChange = { viewModel.setVadThreshold(it.toInt()) },
+                                            valueRange = 0f..100f
+                                        )
+                                    }
                                 }
                             }
                         }
 
-                        // 性能配置 - 新增
+                        // 6. 音频处理链顺序
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(stringResource(Res.string.audioProcessingChainTitle), style = MaterialTheme.typography.titleSmall)
+                                Text(stringResource(Res.string.processingChainDesc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Spacer(Modifier.height(8.dp))
+                                state.processingChain.forEachIndexed { index, effect ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            Surface(
+                                                shape = androidx.compose.foundation.shape.CircleShape,
+                                                color = MaterialTheme.colorScheme.primaryContainer,
+                                                modifier = Modifier.size(24.dp)
+                                            ) {
+                                                Box(contentAlignment = Alignment.Center) {
+                                                    Text((index + 1).toString(), style = MaterialTheme.typography.labelSmall)
+                                                }
+                                            }
+                                            Text(effect.label, style = MaterialTheme.typography.bodyMedium)
+                                        }
+                                        Row {
+                                            IconButton(
+                                                onClick = {
+                                                    val newChain = state.processingChain.toMutableList()
+                                                    if (index > 0) {
+                                                        val temp = newChain[index]
+                                                        newChain[index] = newChain[index - 1]
+                                                        newChain[index - 1] = temp
+                                                        viewModel.setProcessingChain(newChain)
+                                                    }
+                                                },
+                                                enabled = index > 0,
+                                                modifier = Modifier.size(32.dp)
+                                            ) {
+                                                Icon(Icons.Default.ArrowUpward, contentDescription = "Move Up", modifier = Modifier.size(18.dp))
+                                            }
+                                            IconButton(
+                                                onClick = {
+                                                    val newChain = state.processingChain.toMutableList()
+                                                    if (index < newChain.size - 1) {
+                                                        val temp = newChain[index]
+                                                        newChain[index] = newChain[index + 1]
+                                                        newChain[index + 1] = temp
+                                                        viewModel.setProcessingChain(newChain)
+                                                    }
+                                                },
+                                                enabled = index < state.processingChain.size - 1,
+                                                modifier = Modifier.size(32.dp)
+                                            ) {
+                                                Icon(Icons.Default.ArrowDownward, contentDescription = "Move Down", modifier = Modifier.size(18.dp))
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // 7. 性能配置
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1374,7 +1524,7 @@ fun VBCableManagementSection(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Text(stringResource(Res.string.performanceLabel), style = MaterialTheme.typography.titleSmall)
-    var showPerformanceHelp by remember { mutableStateOf(false) }
+                                    var showPerformanceHelp by remember { mutableStateOf(false) }
                                     IconButton(onClick = { showPerformanceHelp = true }) {
                                         Icon(Icons.Default.Info, contentDescription = "Help", modifier = Modifier.size(20.dp))
                                     }
@@ -1401,6 +1551,9 @@ fun VBCableManagementSection(
                         }
                     }
                 }
+            }
+            SettingsSection.Equalizer -> {
+                EqualizerContent(viewModel, cardOpacity)
             }
             SettingsSection.Plugins -> {
                 PluginSettingsContent(viewModel, cardOpacity)
@@ -1569,8 +1722,212 @@ fun SettingsSection.getLabel(): String {
         SettingsSection.General -> stringResource(Res.string.generalSection)
         SettingsSection.Appearance -> stringResource(Res.string.appearanceSection)
         SettingsSection.Audio -> stringResource(Res.string.audioSection)
+        SettingsSection.Equalizer -> stringResource(Res.string.equalizerSection)
         SettingsSection.Plugins -> stringResource(Res.string.pluginsSection)
         SettingsSection.About -> stringResource(Res.string.aboutSection)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EqualizerContent(viewModel: MainViewModel, cardOpacity: Float) {
+    val state by viewModel.uiState.collectAsState()
+    val eqConfig = state.equalizerConfig
+    
+    val presets = listOf(
+        stringResource(Res.string.equalizerNormalPreset) to List(10) { 0f },
+        stringResource(Res.string.equalizerVocalClarityPreset) to listOf(-3f, -2f, 0f, 0f, 1f, 2f, 4f, 3f, 1f, 0f),
+        stringResource(Res.string.equalizerWarmVocalPreset) to listOf(2f, 3f, 2f, 1f, 0f, -1f, -2f, -2f, -1f, 0f),
+        stringResource(Res.string.equalizerBrightVocalPreset) to listOf(0f, 0f, -1f, -2f, 0f, 2f, 4f, 5f, 4f, 3f),
+        stringResource(Res.string.equalizerDeepVoicePreset) to listOf(4f, 5f, 4f, 1f, 0f, -2f, -3f, -2f, -1f, 0f),
+        stringResource(Res.string.equalizerPodcastPreset) to listOf(3f, 4f, 2f, 0f, 1f, 2f, 3f, 1f, 0f, 0f)
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Enable Switch
+        SettingsSwitchItem(
+            headline = stringResource(Res.string.enableEqualizerLabel),
+            checked = eqConfig.enabled,
+            onCheckedChange = { viewModel.setEqualizerConfig(eqConfig.copy(enabled = it)) },
+            cardOpacity = cardOpacity
+        )
+
+        if (eqConfig.enabled) {
+            // Presets
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(stringResource(Res.string.equalizerPresetsLabel), style = MaterialTheme.typography.titleSmall)
+                    Spacer(Modifier.height(8.dp))
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(presets) { preset ->
+                            FilterChip(
+                                selected = eqConfig.gains == preset.second,
+                                onClick = { viewModel.setEqualizerConfig(eqConfig.copy(gains = preset.second)) },
+                                label = { Text(preset.first) }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Pre-Amp
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(stringResource(Res.string.equalizerPreAmpLabel), style = MaterialTheme.typography.bodyMedium)
+                        Text("${eqConfig.preAmp.toInt()} dB", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Slider(
+                        value = eqConfig.preAmp,
+                        onValueChange = { viewModel.setEqualizerConfig(eqConfig.copy(preAmp = it)) },
+                        valueRange = -30f..30f,
+                        modifier = Modifier.pointerInput(Unit) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    if (event.type == PointerEventType.Scroll) {
+                                        val delta = event.changes.first().scrollDelta.y
+                                        val newValue = (eqConfig.preAmp - delta).coerceIn(-30f, 30f)
+                                        viewModel.setEqualizerConfig(eqConfig.copy(preAmp = newValue))
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+
+            // Bands
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(stringResource(Res.string.equalizerBandsLabel), style = MaterialTheme.typography.titleSmall)
+                    Spacer(Modifier.height(16.dp))
+                    
+                    val frequencies = listOf("31", "62", "125", "250", "500", "1k", "2k", "4k", "8k", "16k")
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth().height(350.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        eqConfig.gains.forEachIndexed { index, gain ->
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.fillMaxHeight().width(44.dp)
+                            ) {
+                                Text(
+                                    if (gain >= 0) "+${gain.toInt()}" else "${gain.toInt()}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = if (gain != 0f) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = if (gain != 0f) FontWeight.Bold else FontWeight.Normal
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .width(44.dp)
+                                        .pointerInput(Unit) {
+                                            awaitPointerEventScope {
+                                                while (true) {
+                                                    val event = awaitPointerEvent()
+                                                    if (event.type == PointerEventType.Scroll) {
+                                                        val delta = event.changes.first().scrollDelta.y
+                                                        val newValue = (gain - delta).coerceIn(-30f, 30f)
+                                                        val newGains = eqConfig.gains.toMutableList()
+                                                        newGains[index] = newValue
+                                                        viewModel.setEqualizerConfig(eqConfig.copy(gains = newGains))
+                                                    }
+                                                }
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Slider(
+                                        value = gain,
+                                        onValueChange = { newValue ->
+                                            val newGains = eqConfig.gains.toMutableList()
+                                            newGains[index] = newValue
+                                            viewModel.setEqualizerConfig(eqConfig.copy(gains = newGains))
+                                        },
+                                        valueRange = -30f..30f,
+                                        modifier = Modifier
+                                            .graphicsLayer {
+                                                rotationZ = -90f
+                                            }
+                                            .requiredWidth(280.dp),
+                                        thumb = {
+                                            // 恢复圆角设计的滑块指示器
+                                            Surface(
+                                                modifier = Modifier.size(width = 14.dp, height = 28.dp),
+                                                shape = RoundedCornerShape(4.dp), // 保持较明显的圆角
+                                                color = MaterialTheme.colorScheme.primary,
+                                                shadowElevation = 2.dp
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .padding(vertical = 10.dp, horizontal = 5.dp)
+                                                        .background(Color.White.copy(alpha = 0.5f), RoundedCornerShape(1.dp))
+                                                )
+                                            }
+                                        },
+                                        track = { sliderState ->
+                                            // 极简专业轨道设计 - 使用 Row 权重避开对私有属性 totalWidth 的访问
+                                            val thumbPos = sliderState.coercedValueAsFraction
+                                            val zeroPos = 0.5f 
+                                            val start = minOf(thumbPos, zeroPos)
+                                            val end = maxOf(thumbPos, zeroPos)
+
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(2.dp)
+                                                    .background(
+                                                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                                                        RoundedCornerShape(1.dp)
+                                                    )
+                                            ) {
+                                                Spacer(modifier = Modifier.weight(start.coerceAtLeast(0.0001f)))
+                                                Box(
+                                                    modifier = Modifier
+                                                        .weight((end - start).coerceAtLeast(0.0001f))
+                                                        .fillMaxHeight()
+                                                        .background(MaterialTheme.colorScheme.primary)
+                                                )
+                                                Spacer(modifier = Modifier.weight((1f - end).coerceAtLeast(0.0001f)))
+                                            }
+                                        }
+                                    )
+                                }
+                                Spacer(Modifier.height(8.dp))
+                                Text(
+                                    frequencies[index],
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

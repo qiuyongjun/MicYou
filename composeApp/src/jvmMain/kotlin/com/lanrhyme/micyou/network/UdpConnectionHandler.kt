@@ -25,7 +25,8 @@ import java.net.InetSocketAddress
 class UdpConnectionHandler(
     private val port: Int,
     private val onAudioPacketReceived: suspend (AudioPacketMessage) -> Unit,
-    private val onError: (String) -> Unit
+    private val onError: (String) -> Unit,
+    private val onAudioPacketOrderedReceived: (suspend (AudioPacketMessageOrdered) -> Unit)? = null
 ) {
     @OptIn(ExperimentalSerializationApi::class)
     private val proto = ProtoBuf { }
@@ -54,6 +55,10 @@ class UdpConnectionHandler(
     @Volatile
     private var jitter = 0.0
 
+    private var lastLossLogTime = 0L
+    private var suppressedLossLogs = 0
+    private var lastOutOfOrderLogTime = 0L
+    private var suppressedOutOfOrderLogs = 0
     /**
      * Starts the UDP receiving loop.
      * This function is non-blocking and runs in a background coroutine.
@@ -191,12 +196,26 @@ class UdpConnectionHandler(
                             packetsLost += cappedLost
                             expectedSequenceNumber = seqNum
                             packetsReceived++
-                            Logger.d("UdpConnectionHandler", "UDP loss detected: expected $expected, received $seqNum, lost $cappedLost packets")
+                            val now = System.currentTimeMillis()
+                            if (now - lastLossLogTime > 1000) {
+                                Logger.d("UdpConnectionHandler", "UDP loss detected: expected $expected, received $seqNum, lost $cappedLost packets. (Suppressed $suppressedLossLogs similar logs)")
+                                lastLossLogTime = now
+                                suppressedLossLogs = 0
+                            } else {
+                                suppressedLossLogs++
+                            }
                         } else {
                             // Out-of-order or duplicate packet: do NOT advance expectedSequenceNumber
                             // This prevents cascading false loss detection when UDP delivers packets out of order
                             packetsReceived++
-                            Logger.d("UdpConnectionHandler", "UDP out-of-order packet: expected $expected, received $seqNum (ignored for loss tracking)")
+                            val now = System.currentTimeMillis()
+                            if (now - lastOutOfOrderLogTime > 1000) {
+                                Logger.d("UdpConnectionHandler", "UDP out-of-order packet: expected $expected, received $seqNum (ignored for loss tracking). (Suppressed $suppressedOutOfOrderLogs similar logs)")
+                                lastOutOfOrderLogTime = now
+                                suppressedOutOfOrderLogs = 0
+                            } else {
+                                suppressedOutOfOrderLogs++
+                            }
                         }
                     } else {
                         expectedSequenceNumber = seqNum
@@ -214,7 +233,11 @@ class UdpConnectionHandler(
                 lastTransmitTime = transmitTime
                 lastReceiveTime = receiveTime
 
-                onAudioPacketReceived(audioPacket)
+                if (onAudioPacketOrderedReceived != null) {
+                    onAudioPacketOrderedReceived.invoke(wrapper.audioPacket)
+                } else {
+                    onAudioPacketReceived(audioPacket)
+                }
             }
         } catch (e: Exception) {
             Logger.e("UdpConnectionHandler", "UDP packet decoding failed", e)
