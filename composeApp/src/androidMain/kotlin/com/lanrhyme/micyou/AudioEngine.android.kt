@@ -90,6 +90,7 @@ actual class AudioEngine actual constructor() {
     companion object {
         private const val MAX_UDP_CONSECUTIVE_FAILURES = 500
         private const val HEARTBEAT_TIMEOUT_MS = 5000L
+        private const val FEC_GROUP_SIZE = 12 // 每 12 个包生成一个 FEC 包（约 87ms @44100Hz）
 
         @Volatile
         private var activeEngine: AudioEngine? = null
@@ -163,6 +164,10 @@ actual class AudioEngine actual constructor() {
     private var savedChannelCount: ChannelCount = ChannelCount.Mono
     private var savedAudioFormat: com.lanrhyme.micyou.AudioFormat = com.lanrhyme.micyou.AudioFormat.PCM_16BIT
     private var isRunning: Boolean = false
+
+    // FEC (前向纠错) 相关
+    private var fecGroupBuffer = mutableListOf<ByteArray>()
+    private var fecGroupStartSeq = 0
 
     private val CHECK_1 = "MicYouCheck1"
     private val CHECK_2 = "MicYouCheck2"
@@ -439,6 +444,8 @@ actual class AudioEngine actual constructor() {
                         val floatBuffer = if (androidAudioFormat == AudioFormat.ENCODING_PCM_FLOAT) FloatArray(readBufSize / 4) else null
                         var sequenceNumber = 0
                         var lastAudioData: ByteArray? = null
+                        fecGroupBuffer = mutableListOf()
+                        fecGroupStartSeq = 0
                         var lastSequenceNumber = -1
                         lastPingReceivedTime = System.currentTimeMillis()
 
@@ -484,6 +491,29 @@ actual class AudioEngine actual constructor() {
 
                                     if (udpSocket != null && udpServerAddress != null) {
                                         sendAudioPacketViaUdp(wrapper)
+
+                                        // FEC: 收集音频 buffer，满一组后生成 FEC 包
+                                        fecGroupBuffer.add(audioData)
+                                        if (fecGroupBuffer.size >= FEC_GROUP_SIZE) {
+                                            val xorResult = xorBuffers(fecGroupBuffer)
+                                            val fecPacket = AudioPacketMessage(
+                                                buffer = xorResult,
+                                                sampleRate = androidSampleRate,
+                                                channelCount = if (channelCount == ChannelCount.Stereo) 2 else 1,
+                                                audioFormat = audioFormat.value
+                                            )
+                                            val fecWrapper = MessageWrapper(
+                                                audioPacket = AudioPacketMessageOrdered(
+                                                    sequenceNumber++,
+                                                    fecPacket,
+                                                    System.currentTimeMillis(),
+                                                    fecSequenceNumber = fecGroupStartSeq
+                                                )
+                                            )
+                                            sendAudioPacketViaUdp(fecWrapper)
+                                            fecGroupBuffer = mutableListOf()
+                                            fecGroupStartSeq = sequenceNumber
+                                        }
                                     } else {
                                         sendChannel?.send(wrapper)
                                     }
@@ -550,6 +580,20 @@ actual class AudioEngine actual constructor() {
         }
     }
     
+    /**
+     * XOR 多个 buffer（处理不同长度：以最长的为准，短的用 0 填充）
+     */
+    private fun xorBuffers(buffers: List<ByteArray>): ByteArray {
+        val maxLen = buffers.maxOf { it.size }
+        val result = ByteArray(maxLen)
+        for (buf in buffers) {
+            for (i in buf.indices) {
+                result[i] = (result[i].toInt() xor buf[i].toInt()).toByte()
+            }
+        }
+        return result
+    }
+
     @OptIn(ExperimentalSerializationApi::class)
     private fun sendAudioPacketViaUdp(wrapper: MessageWrapper) {
         try {

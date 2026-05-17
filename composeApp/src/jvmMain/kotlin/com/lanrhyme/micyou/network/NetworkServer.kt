@@ -125,8 +125,12 @@ class NetworkServer(
         val udpPort = calculateUdpPort(port)
         Logger.i("NetworkServer", "启动双协议服务器: TCP 端口 $port, UDP 端口 $udpPort")
 
-        // 启动 Jitter Buffer（处理乱序包）
-        jitterBuffer = JitterBuffer(onAudioPacketReceived).also { it.start() }
+        // 启动 Jitter Buffer（处理乱序包，带等待窗口和 FEC 恢复）
+        jitterBuffer = JitterBuffer(
+            onAudioPacketReady = onAudioPacketReceived,
+            waitWindowMs = 30L,
+            fecGroupSize = 12
+        ).also { it.start() }
 
         // 启动 UDP 接收器
         udpHandler = UdpConnectionHandler(
