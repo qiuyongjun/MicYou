@@ -128,7 +128,6 @@ class NetworkServer(
         // 启动 Jitter Buffer（处理乱序包，带等待窗口和 FEC 恢复）
         jitterBuffer = JitterBuffer(
             onAudioPacketReady = onAudioPacketReceived,
-            waitWindowMs = 30L,
             fecGroupSize = 12
         ).also { it.start() }
 
