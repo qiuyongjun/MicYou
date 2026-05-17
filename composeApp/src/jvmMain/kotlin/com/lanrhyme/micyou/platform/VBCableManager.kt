@@ -85,8 +85,13 @@ object VBCableManager {
                         "reg", "query", regPath
                     ).redirectErrorStream(true).start()
                     
-                    process.waitFor(3, TimeUnit.SECONDS)
-                    process.exitValue() == 0
+                    val exited = process.waitFor(3, TimeUnit.SECONDS)
+                    if (!exited) {
+                        process.destroy()
+                        false
+                    } else {
+                        process.exitValue() == 0
+                    }
                 } catch (e: Exception) {
                     false
                 }
@@ -208,8 +213,10 @@ object VBCableManager {
                     val process = ProcessBuilder(
                         "reg", "query", "HKLM\\$keyPath"
                     ).redirectErrorStream(true).start()
-    val output = process.inputStream.bufferedReader().readText()
-                    process.waitFor(5, TimeUnit.SECONDS)
+                    val output = process.inputStream.bufferedReader().readText()
+                    if (!process.waitFor(5, TimeUnit.SECONDS)) {
+                        process.destroy()
+                    }
                     
                     for (valueName in listOf("License", "Key", "Serial", "ID", "GUID")) {
                         val regex = Regex("$valueName\\s+REG_\\w+\\s+(.+)", RegexOption.IGNORE_CASE)
@@ -237,8 +244,11 @@ object VBCableManager {
                 svv.absolutePath, "/GetColumnValue", "DefaultRenderDevice", "Name"
             ).redirectErrorStream(true).start()
             
-            process.waitFor(10, TimeUnit.SECONDS)
-    val output = process.inputStream.readAllBytes().toString(Charsets.UTF_16LE).trim()
+            if (!process.waitFor(10, TimeUnit.SECONDS)) {
+                process.destroy()
+                return null
+            }
+            val output = process.inputStream.readAllBytes().toString(Charsets.UTF_16LE).trim()
     val result = if (output.startsWith("\ufeff")) output.substring(1) else output
             if (result.isNotBlank()) result else null
         } catch (e: Exception) {
@@ -276,7 +286,10 @@ object VBCableManager {
                 svv.absolutePath, "/Disable", "VB-Audio Virtual Cable\\Device\\CABLE In 16 Ch\\Render"
             ).redirectErrorStream(true).start()
             
-            process.waitFor(10, TimeUnit.SECONDS)
+            if (!process.waitFor(10, TimeUnit.SECONDS)) {
+                process.destroy()
+                return false
+            }
             Logger.i("VBCableManager", "Disabled CABLE Input 16ch")
             true
         } catch (e: Exception) {
@@ -457,11 +470,16 @@ object VBCableManager {
                 .start()
 
             val output = process.inputStream.bufferedReader().readText()
-            val exitCode = process.waitFor(30, TimeUnit.SECONDS)
+            val exited = process.waitFor(30, TimeUnit.SECONDS)
+            if (!exited) {
+                Logger.w("VBCableManager", "PowerShell configuration timed out")
+                process.destroy()
+                return false
+            }
             val exitVal = process.exitValue()
 
             Logger.d("VBCableManager", "PowerShell config output: ${output.trim()}")
-            Logger.d("VBCableManager", "PowerShell config exit code: $exitVal (waited: $exitCode)")
+            Logger.d("VBCableManager", "PowerShell config exit code: $exitVal")
 
             if (output.contains("VB-CABLE_NOT_FOUND")) {
                 Logger.w("VBCableManager", "VB-Cable devices not found in registry")
@@ -655,7 +673,9 @@ object VBCableManager {
                     "powershell", "-Command", retryPowerShellCommand
                 ).redirectErrorStream(true).start()
                 
-                retryProcess.waitFor(60, TimeUnit.SECONDS)
+                if (!retryProcess.waitFor(60, TimeUnit.SECONDS)) {
+                    retryProcess.destroy()
+                }
                 
                 waited = 0
                 while (waited < maxWait) {
