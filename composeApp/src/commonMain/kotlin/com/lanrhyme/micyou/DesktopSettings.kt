@@ -114,8 +114,6 @@ import micyou.composeapp.generated.resources.audioSection
 import micyou.composeapp.generated.resources.audioSourceLabel
 import micyou.composeapp.generated.resources.autoCheckUpdateDesc
 import micyou.composeapp.generated.resources.autoCheckUpdateLabel
-import micyou.composeapp.generated.resources.autoConfigDesc
-import micyou.composeapp.generated.resources.autoConfigLabel
 import micyou.composeapp.generated.resources.autoStartDesc
 import micyou.composeapp.generated.resources.autoStartLabel
 import micyou.composeapp.generated.resources.backgroundBlurLabel
@@ -1095,28 +1093,8 @@ fun SettingsContent(section: SettingsSection, viewModel: MainViewModel) {
             }
             SettingsSection.Audio -> {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(MaterialTheme.shapes.medium)
-                            .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
-                    ) {
-                        ListItem(
-                            headlineContent = { Text(stringResource(Res.string.autoConfigLabel)) },
-                            supportingContent = { Text(stringResource(Res.string.autoConfigDesc)) },
-                            trailingContent = {
-                                Switch(
-                                    checked = state.isAutoConfig,
-                                    onCheckedChange = { viewModel.setAutoConfig(it) }
-                                )
-                            },
-                            modifier = Modifier.clickable { viewModel.setAutoConfig(!state.isAutoConfig) },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                        )
-                    }
-                    val manualSettingsEnabled = !state.isAutoConfig
-                    
                     if (platform.type == PlatformType.Android) {
+                        val manualSettingsEnabled = !state.isAutoConfig
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1204,51 +1182,6 @@ fun SettingsContent(section: SettingsSection, viewModel: MainViewModel) {
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
                         }
-                    }
-                    
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(MaterialTheme.shapes.medium)
-                            .background(MaterialTheme.colorScheme.surfaceBright.copy(alpha = cardOpacity * 0.5f))
-                    ) {
-                        ListItem(
-                            headlineContent = { Text(stringResource(Res.string.audioSourceLabel)) },
-                            trailingContent = {
-                                var expanded by remember { mutableStateOf(false) }
-                                val audioSourceOptions = getAudioSourceOptions()
-                                val currentSource = audioSourceOptions.find { it.name == state.androidAudioSourceName } ?: audioSourceOptions.firstOrNull()
-                                if (audioSourceOptions.isNotEmpty() && currentSource != null) {
-                                    Box {
-                                        TextButton(onClick = { expanded = true }) {
-                                            Text(
-                                                if (currentSource.labelRes != null) stringResource(currentSource.labelRes)
-                                                else currentSource.label ?: currentSource.name
-                                            )
-                                        }
-                                        DropdownMenu(
-                                            expanded = expanded,
-                                            onDismissRequest = { expanded = false },
-                                            shape = MaterialTheme.shapes.medium
-                                        ) {
-                                            audioSourceOptions.forEach { source ->
-                                                DropdownMenuItem(
-                                                    text = {
-                                                        Text(
-                                                            if (source.labelRes != null) stringResource(source.labelRes)
-                                                            else source.label ?: source.name
-                                                        )
-                                                    },
-                                                    onClick = { viewModel.setAndroidAudioSource(source.name); expanded = false },
-                                                    trailingIcon = { if (currentSource == source) Icon(Icons.Default.Check, contentDescription = null) }
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                        )
                     }
 
                     if (platform.type == PlatformType.Desktop) {
