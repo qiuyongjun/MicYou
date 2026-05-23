@@ -205,6 +205,13 @@ fun DesktopHomeEnhanced(
         )
     }
 
+    if (state.showUdpWarningDialog) {
+        UdpWarningDialog(
+            port = state.port,
+            onDismiss = { viewModel.dismissUdpWarningDialog() }
+        )
+    }
+
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onSurface,
