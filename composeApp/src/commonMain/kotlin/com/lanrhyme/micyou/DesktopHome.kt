@@ -202,6 +202,13 @@ fun DesktopHome(
         )
     }
 
+    if (state.showUdpWarningDialog) {
+        UdpWarningDialog(
+            port = state.port,
+            onDismiss = { viewModel.dismissUdpWarningDialog() }
+        )
+    }
+
     Surface(
         color = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,
@@ -1052,4 +1059,35 @@ private fun AnimatedIconButton(
     ) {
         content()
     }
+}
+
+@Composable
+fun UdpWarningDialog(
+    port: String,
+    onDismiss: () -> Unit
+) {
+    val tcpPort = port.toIntOrNull() ?: Constants.DEFAULT_TCP_PORT
+    val udpPort = calculateUdpPort(tcpPort)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.udpWarningTitle)) },
+        text = { 
+            Column(
+                modifier = Modifier
+                    .widthIn(min = 400.dp, max = 500.dp)
+                    .heightIn(max = 400.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Text(
+                    text = stringResource(Res.string.udpWarningMessage, udpPort, tcpPort),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text(stringResource(Res.string.udpWarningConfirm))
+            }
+        }
+    )
 }
